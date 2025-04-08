@@ -1,0 +1,14 @@
+[project]
+name = "jax-qec"
+version = "0.1.0"
+description = "JAX-based quantum error correction toolkit"
+authors = [
+    { name="Arsh Noman", email="arshnoman2270@gmail.com" }
+]
+dependencies = [
+    "jax",
+    "numpy",
+    "scipy",
+    "matplotlib",
+    "pytest",
+]
