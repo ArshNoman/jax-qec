@@ -23,23 +23,19 @@ class QuantumCode(ABC):
         pass
 
 
-class RepetitionCode(QuantumCode):
-    """3-qubit bit-flip repetition code."""
-
-    def __init__(self):
-        super().__init__(n_qubits=3, k_qubits=1)
+class GeneralRepetitionCode(QuantumCode):
+    def __init__(self, n: int):
+        assert n % 2 == 1, "number of physical qubits must be odd for majority voting to work"
+        super().__init__(n_qubits=n, k_qubits=1)
+        self.zero = jnp.array([1.0, 0.0])
+        self.one = jnp.array([0.0, 1.0])
 
     def encode(self, logical_state: jnp.ndarray) -> jnp.ndarray:
-        """
-        logical_state: shape (2,) representing |ψ⟩ = a|0⟩ + b|1⟩
-        returns: shape (8,) representing 3-qubit encoded state in 8D Hilbert space
-        """
-        zero = jnp.array([1.0, 0.0])
-        one = jnp.array([0.0, 1.0])
-
-        logical_zero = jnp.kron(jnp.kron(zero, zero), zero)
-        logical_one = jnp.kron(jnp.kron(one, one), one)
-
+        logical_zero = self.zero
+        logical_one = self.one
+        for _ in range(self.n - 1):
+            logical_zero = jnp.kron(logical_zero, self.zero)
+            logical_one = jnp.kron(logical_one, self.one)
         return logical_state[0] * logical_zero + logical_state[1] * logical_one
 
     def measure_syndrome(self, physical_state: jnp.ndarray) -> tuple:
