@@ -38,12 +38,22 @@ class RepetitionEncode(QuantumCode):
             logical_one = jnp.kron(logical_one, self.one)
         return logical_state[0] * logical_zero + logical_state[1] * logical_one
 
-    def measure_syndrome(self, physical_state: jnp.ndarray) -> tuple:
+    def measure_syndrome(self, physical_state: jnp.ndarray) -> jnp.ndarray:
         """
-        Placeholder: just return dummy syndrome.
-        Compute parity of qubit pairs.
+        Measures the syndrome by checking parity between adjacent qubits.
+        Only works for collapsed basis states (i.e., single non-zero index).
+        Returns: JAX array of length (n - 1) containing 0 (agree) or 1 (disagree)
         """
-        return (0, 0)  # placeholder
+        # Step 1: Find which index is active (only works for basis states)
+        index = int(jnp.argmax(jnp.abs(physical_state)))
+
+        # Step 2: Convert to binary string of length n
+        bits = jnp.array(list(bin(index)[2:].zfill(self.n)), dtype=int)
+
+        # Step 3: Compute pairwise parity (XOR) between adjacent qubits
+        syndrome = jnp.array([bits[i] ^ bits[i + 1] for i in range(self.n - 1)])
+
+        return syndrome
 
     def decode(self, physical_state: jnp.ndarray) -> jnp.ndarray:
         """
