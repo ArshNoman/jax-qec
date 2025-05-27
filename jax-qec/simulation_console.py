@@ -1,4 +1,4 @@
-from codes import QuantumCode, GeneralRepetitionCode
+from codes import QuantumCode, RepititionEncode
 import jax.numpy as jnp
 
 
