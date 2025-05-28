@@ -57,20 +57,12 @@ class RepetitionEncode(QuantumCode):
 
     def decode(self, physical_state: jnp.ndarray) -> jnp.ndarray:
         """
-        Decode the corrupted physical state by majority vote.
-        Assumes input is a basis state with 2^n amplitudes and only one non-zero entry.
-        Returns: logical state |0⟩ or |1⟩ as a 2-element vector.
+        Decode a collapsed (basis) state by majority vote.
+        Assumes input state has a single non-zero entry.
         """
-        # Step 1: Find which basis state this is (i.e., where the non-zero amplitude is)
-        index = jnp.argmax(jnp.abs(physical_state))  # get index with highest amplitude
-
-        # Step 2: Convert index to binary string to extract physical qubit values
-        bits = jnp.array(list(jnp.binary_repr(index, width=self.n)), dtype=int)
-
-        # Step 3: Count 1s
-        num_ones = jnp.sum(bits)
-
-        # Step 4: Majority vote
+        index = int(jnp.argmax(jnp.abs(physical_state)))
+        bits = jnp.array(list(bin(index)[2:].zfill(self.n)), dtype=int)
+        num_ones = int(jnp.sum(bits))
         if num_ones > self.n // 2:
             return jnp.array([0.0, 1.0])  # logical |1⟩
         else:
