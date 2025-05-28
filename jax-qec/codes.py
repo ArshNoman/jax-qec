@@ -16,6 +16,10 @@ class QuantumCode(ABC):
         pass
 
     @abstractmethod
+    def measure(self, logical_state: jnp.ndarray) -> jnp.ndarray:
+        pass
+
+    @abstractmethod
     def decode_collapsed(self, physical_state: jnp.ndarray) -> jnp.ndarray:
         pass
 
@@ -66,6 +70,13 @@ class RepetitionEncode(QuantumCode):
             return jnp.array([0.0, 1.0])  # logical |1⟩
         else:
             return jnp.array([1.0, 0.0])  # logical |0⟩
+
+    def decode_superposition(self, state: jnp.ndarray, key: jax.random.PRNGKey) -> jnp.ndarray:
+        """
+        Decodes a superposition state by first simulating measurement, then applying majority vote.
+        """
+        collapsed = self.measure(state, key)
+        return self.decode_collapsed(collapsed)
 
 
     def measure_syndrome(self, physical_state: jnp.ndarray) -> jnp.ndarray:

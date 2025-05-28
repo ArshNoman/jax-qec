@@ -14,7 +14,7 @@ def main():
     plus_state = jnp.array([1.0 / jnp.sqrt(2), 1.0 / jnp.sqrt(2)])  # |+⟩ state -> [1/√2, 1/√2]     [0.70710677 0 0 0 0 0 0 0.70710677]
     minus_state = jnp.array([1.0 / jnp.sqrt(2), -1.0 / jnp.sqrt(2)])  # |-⟩ state -> [1/√2, -1/√2]     [0.70710677 0 0 0 0 0 0 -0.70710677]
 
-    current = minus_state
+    current = plus_state
     print("Current state:\n", current)
 
     encoded = code.encode(current)
@@ -22,7 +22,6 @@ def main():
 
     # encoded_flipped = bit_flip(encoded, 0)
     # print("Flipped encoded state:\n", state_to_braket(encoded_flipped))
-    #
     # encoded_flipped = bit_flip(encoded_flipped, 1)
     # print("Flipped encoded state:\n", state_to_braket(encoded_flipped))
 
@@ -31,8 +30,13 @@ def main():
     # measured = code.measure(current, subkey)
     # print("Measured state:\n", measured)
 
-    decoded = code.decode_collapsed(encoded)
-    print("Decoded state:\n", decoded)
+    # decoded = code.decode_collapsed(encoded)
+    # print("Decoded state:\n", decoded)
+
+    key = jax.random.PRNGKey(random.randint(1, 100))
+    key, subkey = jax.random.split(key)
+    decoded = code.decode_superposition(encoded, subkey)
+    print("Decoded state:\n", decoded, "->", state_to_braket(decoded))
 
 
 if __name__ == "__main__":
