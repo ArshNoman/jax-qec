@@ -79,4 +79,12 @@ class RepetitionEncode(QuantumCode):
         collapsed = jnp.zeros_like(state)
         return collapsed.at[index].set(1.0)
 
+    def decode_with_measurement(self, physical_state: jnp.ndarray) -> jnp.ndarray:
+        """
+        Decodes a physical state that may be in superposition by first
+        simulating a measurement and then applying majority vote decoding.
+        """
+        collapsed = self.simulate_measurement(physical_state)
+        return self.decode(collapsed)
+
 
