@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import Any
 import jax.numpy as jnp
+import jax
 
 
 class QuantumCode(ABC):
@@ -38,6 +39,18 @@ class RepetitionEncode(QuantumCode):
             logical_one = jnp.kron(logical_one, self.one)
         return logical_state[0] * logical_zero + logical_state[1] * logical_one
 
+    def measure(self, state: jnp.ndarray, key: jax.random.PRNGKey) -> jnp.ndarray:
+        """
+        Simulates quantum measurement using JAX-compatible randomness.
+        Returns a collapsed state vector.
+        """
+        probs = jnp.abs(state) ** 2
+        probs = probs / jnp.sum(probs)
+
+        index = jax.random.choice(key, a=len(probs), p=probs)
+        collapsed = jnp.zeros_like(state)
+        return collapsed.at[index].set(1.0)
+
     def measure_syndrome(self, physical_state: jnp.ndarray) -> jnp.ndarray:
         """
         Measures the syndrome by checking parity between adjacent qubits.
@@ -58,7 +71,6 @@ class RepetitionEncode(QuantumCode):
     def decode(self, physical_state: jnp.ndarray) -> jnp.ndarray:
         """
         Decode a collapsed (basis) state by majority vote.
-        Assumes input state has a single non-zero entry.
         """
         index = int(jnp.argmax(jnp.abs(physical_state)))
         bits = jnp.array(list(bin(index)[2:].zfill(self.n)), dtype=int)
@@ -68,23 +80,12 @@ class RepetitionEncode(QuantumCode):
         else:
             return jnp.array([1.0, 0.0])  # logical |0⟩
 
-    def simulate_measurement(self, state: jnp.ndarray) -> jnp.ndarray:
-        """
-        Simulates a quantum measurement of a state.
-        Collapses the state probabilistically into a basis state.
-        """
-        probs = jnp.abs(state) ** 2
-        probs = probs / jnp.sum(probs)
-        index = int(np.random.choice(len(state), p=np.array(probs)))
-        collapsed = jnp.zeros_like(state)
-        return collapsed.at[index].set(1.0)
-
     def decode_with_measurement(self, physical_state: jnp.ndarray) -> jnp.ndarray:
         """
         Decodes a physical state that may be in superposition by first
         simulating a measurement and then applying majority vote decoding.
         """
-        collapsed = self.simulate_measurement(physical_state)
+        collapsed = self.measure(physical_state)
         return self.decode(collapsed)
 
 
