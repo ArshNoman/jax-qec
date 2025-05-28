@@ -68,4 +68,15 @@ class RepetitionEncode(QuantumCode):
         else:
             return jnp.array([1.0, 0.0])  # logical |0⟩
 
+    def simulate_measurement(self, state: jnp.ndarray) -> jnp.ndarray:
+        """
+        Simulates a quantum measurement of a state.
+        Collapses the state probabilistically into a basis state.
+        """
+        probs = jnp.abs(state) ** 2
+        probs = probs / jnp.sum(probs)
+        index = int(np.random.choice(len(state), p=np.array(probs)))
+        collapsed = jnp.zeros_like(state)
+        return collapsed.at[index].set(1.0)
+
 
