@@ -16,7 +16,7 @@ class QuantumCode(ABC):
         pass
 
     @abstractmethod
-    def decode(self, physical_state: jnp.ndarray) -> jnp.ndarray:
+    def decode_collapsed(self, physical_state: jnp.ndarray) -> jnp.ndarray:
         pass
 
     @abstractmethod
@@ -51,10 +51,14 @@ class RepetitionEncode(QuantumCode):
         collapsed = jnp.zeros_like(state)
         return collapsed.at[index].set(1.0)
 
-    def decode(self, physical_state: jnp.ndarray) -> jnp.ndarray:
+    def decode_collapsed(self, physical_state: jnp.ndarray) -> jnp.ndarray:
         """
         Decode a collapsed (basis) state by majority vote.
         """
+
+        if jnp.count_nonzero((physical_state != 0) & (physical_state != 1)) >= 1:
+            raise ValueError("decode_collapsed() expects a collapsed basis state. Use decode_superposition() for superpositions.")
+
         index = int(jnp.argmax(jnp.abs(physical_state)))
         bits = jnp.array(list(bin(index)[2:].zfill(self.n)), dtype=int)
         num_ones = int(jnp.sum(bits))
@@ -63,13 +67,6 @@ class RepetitionEncode(QuantumCode):
         else:
             return jnp.array([1.0, 0.0])  # logical |0⟩
 
-    def decode_with_measurement(self, physical_state: jnp.ndarray) -> jnp.ndarray:
-        """
-        Decodes a physical state that may be in superposition by first
-        simulating a measurement and then applying majority vote decoding.
-        """
-        collapsed = self.measure(physical_state)
-        return self.decode(collapsed)
 
     def measure_syndrome(self, physical_state: jnp.ndarray) -> jnp.ndarray:
         """
