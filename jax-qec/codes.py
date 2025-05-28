@@ -51,23 +51,6 @@ class RepetitionEncode(QuantumCode):
         collapsed = jnp.zeros_like(state)
         return collapsed.at[index].set(1.0)
 
-    def measure_syndrome(self, physical_state: jnp.ndarray) -> jnp.ndarray:
-        """
-        Measures the syndrome by checking parity between adjacent qubits.
-        Only works for collapsed basis states (i.e., single non-zero index).
-        Returns: JAX array of length (n - 1) containing 0 (agree) or 1 (disagree)
-        """
-        # Step 1: Find which index is active (only works for basis states)
-        index = int(jnp.argmax(jnp.abs(physical_state)))
-
-        # Step 2: Convert to binary string of length n
-        bits = jnp.array(list(bin(index)[2:].zfill(self.n)), dtype=int)
-
-        # Step 3: Compute pairwise parity (XOR) between adjacent qubits
-        syndrome = jnp.array([bits[i] ^ bits[i + 1] for i in range(self.n - 1)])
-
-        return syndrome
-
     def decode(self, physical_state: jnp.ndarray) -> jnp.ndarray:
         """
         Decode a collapsed (basis) state by majority vote.
@@ -87,5 +70,22 @@ class RepetitionEncode(QuantumCode):
         """
         collapsed = self.measure(physical_state)
         return self.decode(collapsed)
+
+    def measure_syndrome(self, physical_state: jnp.ndarray) -> jnp.ndarray:
+        """
+        Measures the syndrome by checking parity between adjacent qubits.
+        Only works for collapsed basis states (i.e., single non-zero index).
+        Returns: JAX array of length (n - 1) containing 0 (agree) or 1 (disagree)
+        """
+        # Step 1: Find which index is active (only works for basis states)
+        index = int(jnp.argmax(jnp.abs(physical_state)))
+
+        # Step 2: Convert to binary string of length n
+        bits = jnp.array(list(bin(index)[2:].zfill(self.n)), dtype=int)
+
+        # Step 3: Compute pairwise parity (XOR) between adjacent qubits
+        syndrome = jnp.array([bits[i] ^ bits[i + 1] for i in range(self.n - 1)])
+
+        return syndrome
 
 
