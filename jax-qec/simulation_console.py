@@ -14,35 +14,36 @@ def main():
     plus_state = jnp.array([1.0 / jnp.sqrt(2), 1.0 / jnp.sqrt(2)])  # |+⟩ state -> [1/√2, 1/√2]     [0.70710677 0 0 0 0 0 0 0.70710677]
     minus_state = jnp.array([1.0 / jnp.sqrt(2), -1.0 / jnp.sqrt(2)])  # |-⟩ state -> [1/√2, -1/√2]     [0.70710677 0 0 0 0 0 0 -0.70710677]
 
-    current = logical_one
-    print("Current state:", current, "->", state_to_braket(current))
+    current = plus_state
+    print("Encoded state:", current)
+    # print("Current state:", current, "->", state_to_braket(current))
 
     current = code.encode(current)
-    # print("Encoded state:\n", encoded)
-    print("Encoded state:", current, "->", state_to_braket(current))
+    print("Encoded state:\n", current)
+    # print("Encoded state:\n", current, "->", state_to_braket(current))
 
-    current = bit_flip(current, 0)
-    print("Flipped encoded state:", state_to_braket(current))
-    current = bit_flip(current, 1)
-    print("Flipped encoded state:", state_to_braket(current))
-    current = bit_flip(current, 2)
-    print("Flipped encoded state:", state_to_braket(current))
+    # current = bit_flip(current, 0)
+    # print("Flipped encoded state:", state_to_braket(current))
+    # current = bit_flip(current, 1)
+    # print("Flipped encoded state:", state_to_braket(current))
+    # current = bit_flip(current, 2)
+    # print("Flipped encoded state:", state_to_braket(current))
 
-    syndrome = code.measure_syndrome_collapsed(current)
-    print("Syndrome:", syndrome)
-
-    # key = jax.random.PRNGKey(random.randint(1, 100))
-    # key, subkey = jax.random.split(key)
-    # measured = code.measure(current, subkey)
-    # print("Measured state:\n", measured, "->", state_to_braket(measured))
-
-    current = code.decode_collapsed(current)
-    print("Decoded state:", current, "->", state_to_braket(current))
+    # syndrome = code.measure_syndrome_collapsed(current)
+    # print("Syndrome:", syndrome)
 
     # key = jax.random.PRNGKey(random.randint(1, 100))
     # key, subkey = jax.random.split(key)
-    # decoded = code.decode_superposition(encoded, subkey)
-    # print("Decoded state:\n", decoded, "->", state_to_braket(decoded))
+    # current = code.measure(current, subkey)
+    # print("Measured state:\n", current, "->", state_to_braket(current))
+
+    # current = code.decode_collapsed(current)
+    # print("Decoded state:", current, "->", state_to_braket(current))
+
+    key = jax.random.PRNGKey(random.randint(1, 100))
+    key, subkey = jax.random.split(key)
+    current = code.decode_superposition(current, subkey)
+    print("Decoded state:\n", current, "->", state_to_braket(current))
 
 
 if __name__ == "__main__":

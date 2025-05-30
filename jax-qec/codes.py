@@ -80,6 +80,10 @@ class RepetitionEncode(QuantumCode):
         """
         Decodes a superposition state by first simulating measurement, then applying majority vote.
         """
+
+        if jnp.count_nonzero((state == 1)) == 1:
+            raise ValueError("decode_superposition() expects a state in superposition. Use decode_collapsed() for collapsed states.")
+
         collapsed = self.measure(state, key)
         return self.decode_collapsed(collapsed)
 
@@ -102,4 +106,3 @@ class RepetitionEncode(QuantumCode):
             syndrome.append(syndrome_bit)
 
         return jnp.array(syndrome)
-
