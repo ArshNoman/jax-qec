@@ -14,29 +14,33 @@ def main():
     plus_state = jnp.array([1.0 / jnp.sqrt(2), 1.0 / jnp.sqrt(2)])  # |+⟩ state -> [1/√2, 1/√2]     [0.70710677 0 0 0 0 0 0 0.70710677]
     minus_state = jnp.array([1.0 / jnp.sqrt(2), -1.0 / jnp.sqrt(2)])  # |-⟩ state -> [1/√2, -1/√2]     [0.70710677 0 0 0 0 0 0 -0.70710677]
 
-    current = plus_state
+    current = logical_one
     print("Current state:\n", current)
 
     encoded = code.encode(current)
-    print("Encoded state:\n", encoded)
+    # print("Encoded state:\n", encoded)
+    print("Encoded state:\n", encoded, "->", state_to_braket(encoded))
 
-    # encoded_flipped = bit_flip(encoded, 0)
+    encoded_flipped = bit_flip(encoded, 0)
+    print("Flipped encoded state:\n", state_to_braket(encoded_flipped))
+    # encoded_flipped = bit_flip(encoded_flipped, 0)
     # print("Flipped encoded state:\n", state_to_braket(encoded_flipped))
-    # encoded_flipped = bit_flip(encoded_flipped, 1)
-    # print("Flipped encoded state:\n", state_to_braket(encoded_flipped))
+
+    syndrome = code.measure_syndrome_collapsed(encoded_flipped)
+    print("Syndrome:", syndrome)
 
     # key = jax.random.PRNGKey(random.randint(1, 100))
     # key, subkey = jax.random.split(key)
     # measured = code.measure(current, subkey)
-    # print("Measured state:\n", measured)
+    # print("Measured state:\n", measured, "->", state_to_braket(measured))
 
     # decoded = code.decode_collapsed(encoded)
     # print("Decoded state:\n", decoded)
 
-    key = jax.random.PRNGKey(random.randint(1, 100))
-    key, subkey = jax.random.split(key)
-    decoded = code.decode_superposition(encoded, subkey)
-    print("Decoded state:\n", decoded, "->", state_to_braket(decoded))
+    # key = jax.random.PRNGKey(random.randint(1, 100))
+    # key, subkey = jax.random.split(key)
+    # decoded = code.decode_superposition(encoded, subkey)
+    # print("Decoded state:\n", decoded, "->", state_to_braket(decoded))
 
 
 if __name__ == "__main__":

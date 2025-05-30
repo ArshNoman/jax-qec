@@ -28,7 +28,7 @@ class QuantumCode(ABC):
         pass
 
     @abstractmethod
-    def measure_syndrome(self, physical_state: jnp.ndarray) -> Any:
+    def measure_syndrome_collapsed(self, physical_state: jnp.ndarray) -> Any:
         pass
 
 
@@ -82,5 +82,23 @@ class RepetitionEncode(QuantumCode):
         collapsed = self.measure(state, key)
         return self.decode_collapsed(collapsed)
 
-    def measure_syndrome(self, physical_state: jnp.ndarray) -> jnp.ndarray:
-        pass
+    def measure_syndrome_collapsed(self, state: jnp.ndarray) -> jnp.ndarray:
+        """
+        Measures syndrome bits for a collapsed (basis) state by comparing adjacent qubits.
+        Assumes the input is a basis state (only one non-zero amplitude).
+        Returns:
+            JAX array of length n-1 where each bit indicates parity disagreement (1 = error detected)
+        """
+
+        index = int(jnp.argmax(jnp.abs(state)))
+        bits = list(bin(index)[2:].zfill(self.n))  # Ensure length matches number of qubits
+
+        syndrome = []
+        for i in range(self.n - 1):
+            b1 = int(bits[i])
+            b2 = int(bits[i + 1])
+            syndrome_bit = b1 ^ b2  # XOR: 0 if same, 1 if different
+            syndrome.append(syndrome_bit)
+
+        return jnp.array(syndrome)
+
