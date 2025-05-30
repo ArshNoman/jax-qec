@@ -1,4 +1,4 @@
-from ./noise/bi
+from noise.bit_flip import BitFlipNoiseCollapsed
 from codes import RepetitionEncode, QuantumCode
 from utils import state_to_braket
 from noise import bit_flip
@@ -72,6 +72,7 @@ def noise_test():
 
     # Flip qubit 1 (middle qubit of |111⟩ => becomes |101⟩)
     current = noise_model._flip_qubit_with_prob(current, key, qubit_index=1)
+    current = noise_model._flip_qubit_with_prob(current, key, qubit_index=2)
     print("Noisy Encoded State (after bit-flip on qubit 1):", state_to_braket(current))
 
     # 4. Decode
