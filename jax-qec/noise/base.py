@@ -17,3 +17,6 @@ class NoiseModel(ABC):
         """
 
         pass
+
+    # def __call__(self, state: jnp.ndarray, key) -> jnp.ndarray:
+    #     return self.apply(state, key)
