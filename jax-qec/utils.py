@@ -1,6 +1,7 @@
 import jax.numpy as jnp
 import jax
 
+
 def state_to_braket(state: jnp.ndarray) -> str:
     """
     Converts a basis state vector into bra-ket notation.
