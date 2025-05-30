@@ -7,7 +7,7 @@ import jax
 
 
 def main():
-    code = RepetitionEncode(3)
+    code = RepetitionEncode(5)
 
     logical_zero = jnp.array([1.0, 0.0])  # Logical -> |0⟩     [1 0 0 0 0 0 0 0] (encoded)
     logical_one = jnp.array([0.0, 1.0])  # Logical -> |1⟩     [0 0 0 0 0 0 0 1] (encoded)
@@ -15,18 +15,20 @@ def main():
     minus_state = jnp.array([1.0 / jnp.sqrt(2), -1.0 / jnp.sqrt(2)])  # |-⟩ state -> [1/√2, -1/√2]     [0.70710677 0 0 0 0 0 0 -0.70710677]
 
     current = logical_one
-    print("Current state:\n", current)
+    print("Current state:", current, "->", state_to_braket(current))
 
-    encoded = code.encode(current)
+    current = code.encode(current)
     # print("Encoded state:\n", encoded)
-    print("Encoded state:\n", encoded, "->", state_to_braket(encoded))
+    print("Encoded state:", current, "->", state_to_braket(current))
 
-    encoded_flipped = bit_flip(encoded, 0)
-    print("Flipped encoded state:\n", state_to_braket(encoded_flipped))
-    # encoded_flipped = bit_flip(encoded_flipped, 0)
-    # print("Flipped encoded state:\n", state_to_braket(encoded_flipped))
+    current = bit_flip(current, 0)
+    print("Flipped encoded state:", state_to_braket(current))
+    current = bit_flip(current, 1)
+    print("Flipped encoded state:", state_to_braket(current))
+    current = bit_flip(current, 2)
+    print("Flipped encoded state:", state_to_braket(current))
 
-    syndrome = code.measure_syndrome_collapsed(encoded_flipped)
+    syndrome = code.measure_syndrome_collapsed(current)
     print("Syndrome:", syndrome)
 
     # key = jax.random.PRNGKey(random.randint(1, 100))
@@ -34,8 +36,8 @@ def main():
     # measured = code.measure(current, subkey)
     # print("Measured state:\n", measured, "->", state_to_braket(measured))
 
-    # decoded = code.decode_collapsed(encoded)
-    # print("Decoded state:\n", decoded)
+    current = code.decode_collapsed(current)
+    print("Decoded state:", current, "->", state_to_braket(current))
 
     # key = jax.random.PRNGKey(random.randint(1, 100))
     # key, subkey = jax.random.split(key)
