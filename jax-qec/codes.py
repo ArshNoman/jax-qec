@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from typing import Any
+
 import jax.numpy as jnp
 import jax
 
@@ -28,7 +29,7 @@ class QuantumCode(ABC):
         pass
 
     @abstractmethod
-    def measure_syndrome_collapsed(self, physical_state: jnp.ndarray) -> Any:
+    def measure_syndrome_collapsed(self, physical_state: jnp.ndarray) -> jnp.ndarray:
         pass
 
 
