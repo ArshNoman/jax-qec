@@ -81,19 +81,29 @@ def phase_flip_test():
     current = logical_one
     print("Logical State:", state_to_braket(current))
 
-    # 2. Encode using 3-qubit repetition code
+    # 1. Encode using 3-qubit repetition code
     code = RepetitionEncode(3)
     current = code.encode(current)
     print("Encoded State:", state_to_braket(current))
 
     noise_model = PhaseFlipNoiseCollapsed(p=1.0)
 
-    current = noise_model._flip_phase_if_one(current, key, qubit_index=2)
-    print("State after phase flip:", state_to_braket(current), '\n\n', current)
-    # current = noise_model._flip_phase_if_one(current, key, qubit_index=2)
-    # print("State after phase flip:", state_to_braket(current))
+    # 2. Test probability_flip() on qubit 1
+    key, subkey = jax.random.split(key)
+    current = noise_model.probability_flip(current, subkey, qubit_index=1)
+    print("After probability_flip on qubit 1:", state_to_braket(current))
 
-    # 3. Decode
+    # 3. Test _flip_phase_if_one() directly on qubit 2
+    key, subkey = jax.random.split(key)
+    current = noise_model.flip_phase_if_one(current, subkey, qubit_index=2)
+    print("After flip_phase_if_one on qubit 2:", state_to_braket(current))
+
+    # 4. Test apply() across all qubits (this will phase flip again on qubit 1 and 2)
+    key, subkey = jax.random.split(key)
+    current = noise_model.apply(current, subkey)
+    print("After apply() to all qubits:", state_to_braket(current))
+
+    # 5. Decode and print result
     current = code.decode_collapsed(current)
     print("Decoded Logical State:", state_to_braket(current))
 

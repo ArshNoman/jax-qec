@@ -32,7 +32,7 @@ class PhaseFlipNoiseCollapsed(NoiseModel):
         def flip_each_qubit(state_i, key_i):
             for q in range(n_qubits):
                 key_i, subkey = random.split(key_i)
-                state_i = self._flip_phase_if_one(state_i, subkey, q)
+                state_i = self.flip_phase_if_one(state_i, subkey, q)
             return state_i
 
         if is_batched:
@@ -41,7 +41,7 @@ class PhaseFlipNoiseCollapsed(NoiseModel):
         else:
             return flip_each_qubit(state, key)
 
-    def _flip_phase_if_one(self, state, key, qubit_index):
+    def flip_phase_if_one(self, state, key, qubit_index):
         """
         Flip the phase (multiply by -1) if the target qubit is 1, with probability p.
 
@@ -58,9 +58,20 @@ class PhaseFlipNoiseCollapsed(NoiseModel):
         def apply_phase_flip(state_):
             index = jnp.argmax(state_)  # Only one non-zero amplitude
             bit_value = (index >> (state_.shape[-1].bit_length() - qubit_index - 1)) & 1
-            return lax.cond(bit_value == 1,
-                            lambda s: s.at[index].set(-s[index]),
-                            lambda s: s,
-                            state_)
+            return lax.cond(bit_value == 1, lambda s: s.at[index].set(-s[index]), lambda s: s, state_)
 
         return lax.cond(should_flip, apply_phase_flip, lambda x: x, state)
+
+    def probability_flip(self, state: jnp.ndarray, key, qubit_index: int) -> jnp.ndarray:
+        """
+        Flip a single qubit's phase with probability p.
+
+        Parameters:
+        - state: jnp.ndarray representing a collapsed state
+        - key: PRNG key
+        - qubit_index: index of the qubit to possibly phase flip
+
+        Returns:
+        - jnp.ndarray: modified state
+        """
+        return self.flip_phase_if_one(state, key, qubit_index)
