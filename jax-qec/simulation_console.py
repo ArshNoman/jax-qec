@@ -71,8 +71,8 @@ def noise_test():
     noise_model = BitFlipNoiseCollapsed(p=1.0)
 
     # Flip qubit 1 (middle qubit of |111⟩ => becomes |101⟩)
-    current = noise_model._flip_qubit_with_prob(current, key, qubit_index=1)
-    current = noise_model._flip_qubit_with_prob(current, key, qubit_index=2)
+    current = noise_model.probability_flip(current, key, qubit_index=1)
+    current = noise_model.probability_flip(current, key, qubit_index=2)
     print("Noisy Encoded State (after bit-flip on qubit 1):", state_to_braket(current))
 
     # 4. Decode

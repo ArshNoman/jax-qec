@@ -42,7 +42,7 @@ class BitFlipNoiseCollapsed(NoiseModel):
         else:
             return flip_each_qubit(state, key)
 
-    def _flip_qubit_with_prob(self, state, key, qubit_index):
+    def probability_flip(self, state, key, qubit_index):
         """
         Flips a qubit with probability p using a Pauli-X.
 
