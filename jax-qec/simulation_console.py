@@ -1,3 +1,4 @@
+from noise.phase_flip import PhaseFlipNoiseCollapsed
 from noise.bit_flip import BitFlipNoiseCollapsed
 from codes import RepetitionEncode, QuantumCode
 from utils import state_to_braket
@@ -15,7 +16,7 @@ minus_state = jnp.array([1.0 / jnp.sqrt(2), -1.0 / jnp.sqrt(2)])  # |-⟩ state 
 def codes_test():
     code = RepetitionEncode(5)
 
-    current = plus_state
+    current = jnp.array([0.0, -1.0])
     print("Encoded state:", current)
     # print("Current state:", current, "->", state_to_braket(current))
 
@@ -38,18 +39,17 @@ def codes_test():
     # current = code.measure(current, subkey)
     # print("Measured state:\n", current, "->", state_to_braket(current))
 
-    # current = code.decode_collapsed(current)
-    # print("Decoded state:", current, "->", state_to_braket(current))
+    current = code.decode_collapsed(current)
+    print("Decoded state:", current, "->", state_to_braket(current))
 
-    key = jax.random.PRNGKey(random.randint(1, 100))
-    key, subkey = jax.random.split(key)
-    current = code.decode_superposition(current, subkey)
-    print("Decoded state:\n", current, "->", state_to_braket(current))
+    # key = jax.random.PRNGKey(random.randint(1, 100))
+    # key, subkey = jax.random.split(key)
+    # current = code.decode_superposition(current, subkey)
+    # print("Decoded state:\n", current, "->", state_to_braket(current))
 
 
-def noise_test():
+def bit_flip_test():
 
-    # JAX PRNG setup
     key = jax.random.PRNGKey(42)
 
     # 1. Define logical state (|1⟩ in this case)
@@ -61,12 +61,6 @@ def noise_test():
     current = code.encode(current)
     print("Encoded State:", state_to_braket(current))
 
-    # 3. Apply bit-flip noise (collapsed version, simulate error on one qubit)
-    # Force collapse of the encoded state to simulate post-measurement scenario
-    # For testing purposes, let's pretend a specific collapsed state occurred
-    # collapsed_state = jnp.array([0., 0., 0., 0., 0., 0., 0., 1.])  # |111⟩
-    # print("Collapsed Encoded State:", state_to_braket(collapsed_state))
-
     # Instantiate noise model with p = 1.0 for deterministic flip
     noise_model = BitFlipNoiseCollapsed(p=1.0)
 
@@ -75,10 +69,34 @@ def noise_test():
     current = noise_model.probability_flip(current, key, qubit_index=2)
     print("Noisy Encoded State (after bit-flip on qubit 1):", state_to_braket(current))
 
-    # 4. Decode
+    # 3. Decode
+    current = code.decode_collapsed(current)
+    print("Decoded Logical State:", state_to_braket(current))
+
+
+def phase_flip_test():
+
+    key = jax.random.PRNGKey(123)
+
+    current = logical_one
+    print("Logical State:", state_to_braket(current))
+
+    # 2. Encode using 3-qubit repetition code
+    code = RepetitionEncode(3)
+    current = code.encode(current)
+    print("Encoded State:", state_to_braket(current))
+
+    noise_model = PhaseFlipNoiseCollapsed(p=1.0)
+
+    current = noise_model._flip_phase_if_one(current, key, qubit_index=2)
+    print("State after phase flip:", state_to_braket(current), '\n\n', current)
+    # current = noise_model._flip_phase_if_one(current, key, qubit_index=2)
+    # print("State after phase flip:", state_to_braket(current))
+
+    # 3. Decode
     current = code.decode_collapsed(current)
     print("Decoded Logical State:", state_to_braket(current))
 
 
 if __name__ == "__main__":
-    noise_test()
+    codes_test()

@@ -65,7 +65,7 @@ class RepetitionEncode(QuantumCode):
         Decode a collapsed (basis) state by majority vote.
         """
 
-        if jnp.count_nonzero((physical_state != 0) & (physical_state != 1)) >= 1:
+        if jnp.count_nonzero((physical_state != 0) & (physical_state != 1) & (physical_state != -1)) >= 1:
             raise ValueError("decode_collapsed() expects a collapsed basis state. Use decode_superposition() for superpositions.")
 
         index = int(jnp.argmax(jnp.abs(physical_state)))
