@@ -90,7 +90,7 @@ def phase_flip_test():
 
     # 2. Test probability_flip() on qubit 1
     key, subkey = jax.random.split(key)
-    current = noise_model.probability_flip(current, subkey, qubit_index=1)
+    current = noise_model.probability_flip(current, subkey, qubit_index=1) ≈A
     print("After probability_flip on qubit 1:", state_to_braket(current))
 
     # 3. Test _flip_phase_if_one() directly on qubit 2
