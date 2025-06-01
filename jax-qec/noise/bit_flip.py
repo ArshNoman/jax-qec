@@ -32,12 +32,12 @@ class BitFlipNoiseCollapsed(NoiseModel):
 
         def flip_each_qubit(state_i, key_i):
             for q in range(n_qubits):
-                key_i, subkey = random.split(key_i)
-                state_i = self._flip_qubit_with_prob(state_i, subkey, q)
+                key_i, subkey = jax.random.split(key_i)
+                state_i = self.probability_flip(state_i, subkey, q)
             return state_i
 
         if is_batched:
-            keys = random.split(key, state.shape[0])
+            keys = jax.random.split(key, state.shape[0])
             return jnp.stack([flip_each_qubit(s, k) for s, k in zip(state, keys)])
         else:
             return flip_each_qubit(state, key)
@@ -54,7 +54,7 @@ class BitFlipNoiseCollapsed(NoiseModel):
         Returns:
         - jnp.ndarray: modified state
         """
-        should_flip = random.bernoulli(key, self.p)
+        should_flip = jax.random.bernoulli(key, self.p)
 
         def apply_x(state_):
             bit = 1 << (state_.ndim * 0 + state_.shape[-1].bit_length() - qubit_index - 1)
@@ -93,17 +93,17 @@ class BitFlipNoiseSuperposition(NoiseModel):
 
         def flip_each_qubit(state_i, key_i):
             for q in range(n_qubits):
-                key_i, subkey = random.split(key_i)
-                state_i = self._flip_qubit(state_i, subkey, q)
+                key_i, subkey = jax.random.split(key_i)
+                state_i = self.flip_qubit(state_i, subkey, q)
             return state_i
 
         if is_batched:
-            keys = random.split(key, state.shape[0])
+            keys = jax.random.split(key, state.shape[0])
             return jnp.stack([flip_each_qubit(s, k) for s, k in zip(state, keys)])
         else:
             return flip_each_qubit(state, key)
 
-    def _flip_qubit(self, state: jnp.ndarray, key, qubit_index: int) -> jnp.ndarray:
+    def flip_qubit(self, state: jnp.ndarray, key, qubit_index: int) -> jnp.ndarray:
         """
         Apply a bit-flip on a specific qubit with probability p.
 
@@ -118,7 +118,7 @@ class BitFlipNoiseSuperposition(NoiseModel):
         Returns:
         - jnp.ndarray: the modified state
         """
-        should_flip = random.bernoulli(key, self.p)
+        should_flip = jax.random.bernoulli(key, self.p)
 
         def flip(state_):
             num_amplitudes = state_.shape[0]
@@ -149,4 +149,4 @@ class BitFlipNoiseSuperposition(NoiseModel):
         Returns:
         - jnp.ndarray: new state
         """
-        return self._flip_qubit(state, key, qubit_index)
+        return self.flip_qubit(state, key, qubit_index)
