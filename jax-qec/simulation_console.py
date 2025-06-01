@@ -99,4 +99,4 @@ def phase_flip_test():
 
 
 if __name__ == "__main__":
-    codes_test()
+    phase_flip_test()
