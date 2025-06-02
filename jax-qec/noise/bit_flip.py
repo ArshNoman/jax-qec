@@ -1,3 +1,4 @@
+import jax
 from jax import lax
 import jax.numpy as jnp
 import jax.random as random
@@ -65,7 +66,7 @@ class BitFlipNoiseCollapsed(NoiseModel):
         return lax.cond(should_flip, apply_x, lambda x: x, state)
 
 
-class BitFlipNoiseSuperposition(NoiseModel):
+class BitFlipNoise(NoiseModel):
 
     def __init__(self, p: float):
         """
@@ -118,7 +119,7 @@ class BitFlipNoiseSuperposition(NoiseModel):
         Returns:
         - jnp.ndarray: the modified state
         """
-        should_flip = jax.random.bernoulli(key, self.p)
+        should_flip = random.bernoulli(key, self.p)
 
         def flip(state_):
             num_amplitudes = state_.shape[0]
@@ -128,12 +129,7 @@ class BitFlipNoiseSuperposition(NoiseModel):
             bit_mask = 1 << (num_amplitudes.bit_length() - 1 - qubit_index)
             flipped_indices = indices ^ bit_mask
 
-            # For collapsed states: one-hot vector, just reindex
-            if jnp.count_nonzero(state_ > 1e-6) == 1:
-                return state_[flipped_indices]
-            else:
-                # For superpositions: reorder full vector
-                return state_[flipped_indices]
+            return state_[flipped_indices]
 
         return lax.cond(should_flip, flip, lambda x: x, state)
 
