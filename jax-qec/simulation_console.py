@@ -53,7 +53,7 @@ def codes_test():
 def bit_flip_test():
     key = jax.random.PRNGKey(42)
 
-    current = logical_one
+    current = logical_zero
     print("Logical State:", state_to_braket(current))
 
     # Encoding
@@ -64,9 +64,9 @@ def bit_flip_test():
     noise_model = BitFlipNoise(p=1.0)
 
     # Testing probability flip on a collapsed state
-    key, subkey = jax.random.split(key)
-    current = noise_model.probability_flip(current, subkey, qubit_index=1)
-    print("Collapsed State after flip on qubit 1:", state_to_braket(current))
+    # key, subkey = jax.random.split(key)
+    # current = noise_model.probability_flip(current, subkey, qubit_index=2)
+    # print("Collapsed State after flip on qubit 1:", state_to_braket(current))
 
     # Test apply() on collapsed state: flip all qubits
     key, subkey = jax.random.split(key)

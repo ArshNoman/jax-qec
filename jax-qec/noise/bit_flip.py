@@ -145,4 +145,4 @@ class BitFlipNoise(NoiseModel):
         Returns:
         - jnp.ndarray: new state
         """
-        return self.flip_qubit(state, key, qubit_index)
+        return self.flip_qubit(state, key, qubit_index+1)
