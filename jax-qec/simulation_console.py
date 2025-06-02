@@ -52,42 +52,47 @@ def codes_test():
 
 def bit_flip_test():
     key = jax.random.PRNGKey(42)
+    #
+    # current = logical_zero
+    # print("Logical State:", state_to_braket(current))
+    #
+    # # Encoding
+    # code = RepetitionEncode(3)
+    # current = code.encode(current)
+    # print("Encoded State:", state_to_braket(current))
+    #
+    noise_model = BitFlipNoise(p=1.0)
+    #
+    # # Testing probability flip on a collapsed state
+    # # key, subkey = jax.random.split(key)
+    # # current = noise_model.probability_flip(current, subkey, qubit_index=2)
+    # # print("Collapsed State after flip on qubit 1:", state_to_braket(current))
+    #
+    # # Test apply() on collapsed state: flip all qubits
+    # key, subkey = jax.random.split(key)
+    # current = noise_model.apply(current, subkey)
+    # print("Collapsed State after apply() to all qubits:", state_to_braket(current))
+    #
+    # # Decode collapsed state to logical state
+    # decoded = code.decode_collapsed(current)
+    # print("Decoded Logical State:", state_to_braket(decoded))
 
-    current = logical_zero
-    print("Logical State:", state_to_braket(current))
+    current = plus_state
+    print("Superposition State:", current)
 
     # Encoding
     code = RepetitionEncode(3)
     current = code.encode(current)
     print("Encoded State:", state_to_braket(current))
 
-    noise_model = BitFlipNoise(p=1.0)
-
-    # Testing probability flip on a collapsed state
-    # key, subkey = jax.random.split(key)
-    # current = noise_model.probability_flip(current, subkey, qubit_index=2)
-    # print("Collapsed State after flip on qubit 1:", state_to_braket(current))
-
-    # Test apply() on collapsed state: flip all qubits
     key, subkey = jax.random.split(key)
-    current = noise_model.apply(current, subkey)
-    print("Collapsed State after apply() to all qubits:", state_to_braket(current))
-
-    # Decode collapsed state to logical state
-    decoded = code.decode_collapsed(current)
-    print("Decoded Logical State:", state_to_braket(decoded))
-
-    current = plus_state
-    print("Superposition State:", state_to_braket(current))
-
-    key, subkey = jax.random.split(key)
-    flipped_super = noise_model.probability_flip(current, subkey, qubit_index=0)
-    print("Superposition after flip on qubit 0:", state_to_braket(flipped_super))
+    current = noise_model.probability_flip(current, subkey, qubit_index=0)
+    print("Superposition after flip on qubit 0:", current)
 
     # Apply full bit-flip noise to superposition state
-    key, subkey = jax.random.split(key)
-    current = noise_model.apply(current, subkey)
-    print("Superposition after apply() to all qubits:", state_to_braket(current))
+    # key, subkey = jax.random.split(key)
+    # current = noise_model.apply(current, subkey)
+    # print("Superposition after apply() to all qubits:", state_to_braket(current))
 
     # 11. Confirm normalization
     norm = jnp.linalg.norm(current)
@@ -130,3 +135,5 @@ def phase_flip_test():
 
 if __name__ == "__main__":
     bit_flip_test()
+
+# [0.70710677 0. 0. 0. 0. 0. 0. 0.70710677]
