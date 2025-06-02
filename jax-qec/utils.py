@@ -2,11 +2,19 @@ import jax.numpy as jnp
 import jax
 
 
+logical_zero = jnp.array([1.0, 0.0])  # Logical -> |0⟩     [1 0 0 0 0 0 0 0] (encoded)
+logical_one = jnp.array([0.0, 1.0])  # Logical -> |1⟩     [0 0 0 0 0 0 0 1] (encoded)
+plus_state = jnp.array([1.0 / jnp.sqrt(2), 1.0 / jnp.sqrt(2)])  # |+⟩ state -> [1/√2, 1/√2]     [0.70710677 0 0 0 0 0 0 0.70710677]
+minus_state = jnp.array([1.0 / jnp.sqrt(2), -1.0 / jnp.sqrt(2)])  # |-⟩ state -> [1/√2, -1/√2]     [0.70710677 0 0 0 0 0 0 -0.70710677]
+
+
 def state_to_braket(state: jnp.ndarray) -> str:
     """
     Converts a basis state vector into bra-ket notation.
     Assumes the input is a collapsed state.
     """
+    if jnp.count_nonzero((state == 1)) == 0:
+        raise ValueError('state_to_braket only accepts collapsed states as inputs')
     index = int(jnp.argmax(jnp.abs(state)))  # Find the index with amplitude 1
     n = int(jnp.log2(state.shape[0]))        # Number of qubits
     binary_str = bin(index)[2:].zfill(n)     # Convert to binary and pad

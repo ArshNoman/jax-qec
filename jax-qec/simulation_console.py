@@ -1,18 +1,18 @@
 from noise.phase_flip import PhaseFlipNoiseCollapsed
 from noise.bit_flip import BitFlipNoise
-from codes import RepetitionEncode, QuantumCode
+from codes import RepetitionEncode
 
-from utils import state_to_braket
+from utils import state_to_braket, logical_zero, logical_one, plus_state, minus_state
 from noise import bit_flip
 import jax.numpy as jnp
-import random as rndm
+import random as r
 from jax import lax
 import jax
 
-logical_zero = jnp.array([1.0, 0.0])  # Logical -> |0⟩     [1 0 0 0 0 0 0 0] (encoded)
-logical_one = jnp.array([0.0, 1.0])  # Logical -> |1⟩     [0 0 0 0 0 0 0 1] (encoded)
-plus_state = jnp.array([1.0 / jnp.sqrt(2), 1.0 / jnp.sqrt(2)])  # |+⟩ state -> [1/√2, 1/√2]     [0.70710677 0 0 0 0 0 0 0.70710677]
-minus_state = jnp.array([1.0 / jnp.sqrt(2), -1.0 / jnp.sqrt(2)])  # |-⟩ state -> [1/√2, -1/√2]     [0.70710677 0 0 0 0 0 0 -0.70710677]
+# logical_zero = jnp.array([1.0, 0.0])  # Logical -> |0⟩     [1 0 0 0 0 0 0 0] (encoded)
+# logical_one = jnp.array([0.0, 1.0])  # Logical -> |1⟩     [0 0 0 0 0 0 0 1] (encoded)
+# plus_state = jnp.array([1.0 / jnp.sqrt(2), 1.0 / jnp.sqrt(2)])  # |+⟩ state -> [1/√2, 1/√2]     [0.70710677 0 0 0 0 0 0 0.70710677]
+# minus_state = jnp.array([1.0 / jnp.sqrt(2), -1.0 / jnp.sqrt(2)])  # |-⟩ state -> [1/√2, -1/√2]     [0.70710677 0 0 0 0 0 0 -0.70710677]
 
 
 def codes_test():
@@ -133,7 +133,18 @@ def phase_flip_test():
     print("Decoded Logical State:", state_to_braket(current))
 
 
+def main():
+    code = RepetitionEncode(3)
+    key = jax.random.PRNGKey(r.randint(1,2))
+
+    current = logical_zero
+    print('Base plus state:', current)
+
+    current = code.encode(current)
+    print('Encoded plus state:', current, '->', state_to_braket(logical_zero))
+
+
 if __name__ == "__main__":
-    bit_flip_test()
+    main()
 
 # [0.70710677 0. 0. 0. 0. 0. 0. 0.70710677]
