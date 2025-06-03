@@ -5,6 +5,7 @@ from codes import RepetitionEncode
 from utils import state_to_braket, logical_zero, logical_one, plus_state, minus_state
 from noise import bit_flip
 import jax.numpy as jnp
+import jax.random as random
 import random as r
 from jax import lax
 import jax
@@ -138,13 +139,42 @@ def main():
     key = jax.random.PRNGKey(r.randint(1,2))
 
     current = logical_zero
-    print('Base plus state:', current)
+    print('Base plus state:', current, '->', state_to_braket(current))
 
     current = code.encode(current)
-    print('Encoded plus state:', current, '->', state_to_braket(logical_zero))
+    print('Encoded plus state:', current, '->', state_to_braket(current))
+
+
+def batched_bit_flip_example():
+    print("=== Batched Bit Flip Noise Test ===")
+
+    key = random.PRNGKey(0)
+    noise_model = BitFlipNoise(p=1.0)  # Always flip for clarity
+
+    # Create a batch of two superposition states: (|000⟩ + |111⟩) / √2
+    plus_state = jnp.zeros(8)
+    plus_state = plus_state.at[0].set(1 / jnp.sqrt(2))
+    plus_state = plus_state.at[7].set(1 / jnp.sqrt(2))
+
+    batch = jnp.stack([plus_state, plus_state])  # shape = (2, 8)
+
+    print("Original Batch:")
+    for i, state in enumerate(batch):
+        print(f"  State {i}:", state_to_braket(state))
+
+    # Apply bit-flip noise
+    key, subkey = random.split(key)
+    noisy_batch = noise_model.apply(batch, subkey)
+
+    print("\nNoisy Batch (after bit flips on all qubits):")
+    for i, state in enumerate(noisy_batch):
+        print(f"  State {i}:", state_to_braket(state))
+
+    # Optional: Confirm norms
+    norms = jnp.linalg.norm(noisy_batch, axis=1)
+    print("\nNorms of noisy states (should be 1.0):", norms)
 
 
 if __name__ == "__main__":
-    main()
+    batched_bit_flip_example()
 
-# [0.70710677 0. 0. 0. 0. 0. 0. 0.70710677]
