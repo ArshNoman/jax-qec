@@ -1,4 +1,5 @@
 import jax
+import math
 from jax import lax
 import jax.numpy as jnp
 import jax.random as random
@@ -95,7 +96,7 @@ class BitFlipNoise(NoiseModel):
         def flip_each_qubit(state_i, key_i):
             for q in range(n_qubits):
                 key_i, subkey = jax.random.split(key_i)
-                state_i = self.flip_qubit(state_i, subkey, q)
+                state_i = self.flip_qubit(state_i, subkey, q, n_qubits)
             return state_i
 
         if is_batched:
@@ -104,7 +105,7 @@ class BitFlipNoise(NoiseModel):
         else:
             return flip_each_qubit(state, key)
 
-    def flip_qubit(self, state: jnp.ndarray, key, qubit_index: int) -> jnp.ndarray:
+    def flip_qubit(self, state: jnp.ndarray, key, qubit_index: int, n_qubits: int) -> jnp.ndarray:
         """
         Apply a bit-flip on a specific qubit with probability p.
 
@@ -126,7 +127,7 @@ class BitFlipNoise(NoiseModel):
             indices = jnp.arange(num_amplitudes)
 
             # Compute XOR bit mask to flip specified qubit
-            bit_mask = 1 << (num_amplitudes.bit_length() - 1 - qubit_index)
+            bit_mask = 1 << (n_qubits - 1 - qubit_index)
             flipped_indices = indices ^ bit_mask
 
             return state_[flipped_indices]
@@ -145,4 +146,5 @@ class BitFlipNoise(NoiseModel):
         Returns:
         - jnp.ndarray: new state
         """
-        return self.flip_qubit(state, key, qubit_index+1)
+        n_qubits = int(jnp.log2(state.shape[-1]))
+        return self.flip_qubit(state, key, qubit_index, n_qubits)

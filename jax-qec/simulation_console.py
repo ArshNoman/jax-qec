@@ -175,6 +175,68 @@ def batched_bit_flip_example():
     print("\nNorms of noisy states (should be 1.0):", norms)
 
 
+def apply_correction(state: jnp.ndarray, correction: jnp.ndarray) -> jnp.ndarray:
+    """
+    Applies a Pauli X correction to each qubit indicated by correction bitmask.
+    """
+    num_qubits = correction.shape[0]
+    if state.ndim == 1:  # Collapsed state
+        index = jnp.argmax(state)
+        bits = jnp.array(list(jnp.binary_repr(index, num_qubits)), dtype=jnp.int32)
+        flipped = bits ^ correction
+        new_index = int("".join(flipped.astype(str)), 2)
+        new_state = jnp.zeros_like(state).at[new_index].set(1.0)
+        return new_state
+    else:
+        # For superpositions: flip amplitudes accordingly
+        indices = jnp.arange(state.shape[0])
+        for i in range(num_qubits):
+            if correction[i]:
+                bit_mask = 1 << (num_qubits - 1 - i)
+                indices = indices ^ bit_mask
+        return state[indices]
+
+
+def run_qec_cycle():
+    # Initialize repetition code
+    current = logical_zero  # |0⟩
+    code = RepetitionEncode(3)
+    key = jax.random.PRNGKey(42)
+
+    # current = code.encode(current)
+
+    print(current)
+
+    # Apply bit-flip noise
+    noise = BitFlipNoise(p=1.0)
+    key, subkey = jax.random.split(key)
+    currentc = noise.probability_flip(current, subkey, 0)
+    print("Noisy State:", currentc)
+    current = noise.apply(current, key)
+    print("Noisy State:", current)
+
+    # # Syndrome measurement
+    # syndrome = code.measure_syndrome_collapsed(noisy_state)
+    #
+    # # Decode
+    # decoder = RepetitionXDecoder(code)
+    # correction = decoder.decode(syndrome)
+    #
+    # # Apply correction
+    # corrected_state = apply_correction(noisy_state, correction)
+    #
+    # # Decode logical qubit
+    # decoded = code.decode_collapsed(corrected_state)
+
+    # print("Original Encoded State:", encoded)
+    # print("Noisy State:", current)
+    # print("Syndrome:", syndrome)
+    # print("Correction:", correction)
+    # print("Corrected State:", corrected_state)
+    # print("Decoded Logical State:", decoded)
+
+
+
 if __name__ == "__main__":
-    batched_bit_flip_example()
+    run_qec_cycle()
 
