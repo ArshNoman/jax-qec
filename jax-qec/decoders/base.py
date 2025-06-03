@@ -1,8 +1,5 @@
-# decoders/base.py
-
 from abc import ABC, abstractmethod
 import jax.numpy as jnp
-from typing import Any
 
 
 class Decoder(ABC):
@@ -11,7 +8,7 @@ class Decoder(ABC):
     All decoders should implement the `decode` method.
     """
 
-    def __init__(self, code: Any):
+    def __init__(self):
         """
         Initialize with a reference to the QEC code instance.
         This allows access to code-specific structures if needed.
