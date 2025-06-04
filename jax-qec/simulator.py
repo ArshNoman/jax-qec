@@ -1,4 +1,4 @@
-def simulate_qec_cycle(logical_state: jnp.ndarray, code, noise_model, decoder, key):
+def simulate_qec_cycle(logical_state, code, noise_model, decoder, key):
     """
     Simulate a full QEC cycle:
     - Encode logical state
@@ -19,7 +19,7 @@ def simulate_qec_cycle(logical_state: jnp.ndarray, code, noise_model, decoder, k
     """
     encoded = code.encode(logical_state)
     noisy = noise_model.apply(encoded, key)
-    collapsed = code.measure_superposition(noisy, key)
+    collapsed = code.decode_collapsed(noisy)
     syndrome = code.measure_syndrome_collapsed(collapsed)
     corrected = decoder.decode(collapsed, syndrome)
     return corrected

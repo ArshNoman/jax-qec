@@ -2,6 +2,7 @@ from utils import state_to_braket, logical_zero, logical_one, plus_state, minus_
 
 from decoders.repetition_decoder import RepetitionXDecoder
 from noise.phase_flip import PhaseFlipNoiseCollapsed
+from simulator import simulate_qec_cycle
 from noise.bit_flip import BitFlipNoise
 from codes import RepetitionEncode
 
@@ -137,14 +138,16 @@ def phase_flip_test():
 
 
 def main():
+    logical_state = logical_zero
     code = RepetitionEncode(3)
+    noise_model = BitFlipNoise(0.2)
+    decoder = RepetitionXDecoder(code)
     key = jax.random.PRNGKey(r.randint(1,2))
 
-    current = logical_zero
-    print('Base plus state:', current, '->', state_to_braket(current))
+    corrected = simulate_qec_cycle(logical_state, code, noise_model, decoder, key)
+    print(corrected)
 
-    current = code.encode(current)
-    print('Encoded plus state:', current, '->', state_to_braket(current))
+
 
 
 def batched_bit_flip_example():
@@ -208,5 +211,5 @@ def decoder_test():
 
 
 if __name__ == "__main__":
-    decoder_test()
+    main()
 
