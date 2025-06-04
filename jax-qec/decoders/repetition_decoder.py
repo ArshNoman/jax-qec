@@ -1,7 +1,7 @@
 import jax.numpy as jnp
 from .base import Decoder
 
-from utils import braket_to_state
+from utils import braket_to_state, state_to_braket
 
 
 class RepetitionXDecoder(Decoder):
@@ -21,11 +21,19 @@ class RepetitionXDecoder(Decoder):
         Returns: jnp.ndarray of shape (n) with the corrected state
         """
 
-        corrected_state = current.copy()
+        corrected_state = state_to_braket(current.copy())
+        corrected_state_list = list(corrected_state[1:-1])  # Strip the '|' and '⟩'
+
+        # csb = ['1', '0', '0']
 
         for i in range(len(syndrome)):
-            if syndrome[i] == 1:
-                corrected_state = corrected_state.at[i + 1].set(corrected_state[i])
+            if syndrome[i] == 1 and syndrome[i+1] == 1:
+                corrected_state_list[i+1] = corrected_state_list[i]
+            elif syndrome[i] == 1 and syndrome[i+1] == 0:
+                corrected_state_list[i] = corrected_state_list[i+1]
 
-        return corrected_state
+        corrected_state = ''
+        for i in corrected_state_list:
+            corrected_state += i
+        return braket_to_state(corrected_state)
 
