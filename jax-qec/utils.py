@@ -29,10 +29,9 @@ def braket_to_state(braket: str) -> jnp.ndarray:
     Returns:
     - jnp.ndarray: A 1D array with a 1.0 at the index corresponding to the binary string.
     """
-    if not (braket.startswith('|') and braket.endswith('⟩')):
-        raise ValueError("Input must be in the form '|...⟩'")
 
-    binary_str = braket[1:-1]  # Strip the '|' and '⟩'
+    if braket.startswith('|') and braket.endswith('⟩'):
+        binary_str = braket[1:-1]  # Strip the '|' and '⟩'
 
     if not all(c in '01' for c in binary_str):
         raise ValueError("Bra-ket string must contain only binary digits between the symbols")

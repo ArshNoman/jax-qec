@@ -1,6 +1,8 @@
 import jax.numpy as jnp
 from .base import Decoder
 
+from utils import braket_to_state
+
 
 class RepetitionXDecoder(Decoder):
     """
