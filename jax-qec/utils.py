@@ -18,7 +18,31 @@ def state_to_braket(state: jnp.ndarray) -> str:
     index = int(jnp.argmax(jnp.abs(state)))  # Find the index with amplitude 1
     n = int(jnp.log2(state.shape[0]))        # Number of qubits
     binary_str = bin(index)[2:].zfill(n)     # Convert to binary and pad
+    print(list(binary_str))
     return f"|{binary_str}⟩"
+
+
+def braket_to_state(braket: str) -> jnp.ndarray:
+    """
+    Converts a bra-ket string like "|101⟩" into a basis state vector.
+
+    Returns:
+    - jnp.ndarray: A 1D array with a 1.0 at the index corresponding to the binary string.
+    """
+    if not (braket.startswith('|') and braket.endswith('⟩')):
+        raise ValueError("Input must be in the form '|...⟩'")
+
+    binary_str = braket[1:-1]  # Strip the '|' and '⟩'
+
+    if not all(c in '01' for c in binary_str):
+        raise ValueError("Bra-ket string must contain only binary digits between the symbols")
+
+    index = int(binary_str, 2)
+    size = 2 ** len(binary_str)
+
+    state = jnp.zeros(size, dtype=jnp.float32)
+    state = state.at[index].set(1.0)
+    return state
 
 
 def bit_flip(state: jnp.ndarray, qubit_index: int) -> jnp.ndarray:

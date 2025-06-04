@@ -8,7 +8,7 @@ class Decoder(ABC):
     All decoders should implement the `decode` method.
     """
 
-    def __init__(self):
+    def __init__(self,  code: jnp.ndarray):
         """
         Initialize with a reference to the QEC code instance.
         This allows access to code-specific structures if needed.
@@ -19,7 +19,7 @@ class Decoder(ABC):
         self.code = code
 
     @abstractmethod
-    def decode(self, syndrome: jnp.ndarray) -> jnp.ndarray:
+    def decode(self, current: jnp.ndarray, syndrome: jnp.ndarray) -> jnp.ndarray:
         """
         Given a measured syndrome, return a correction operator
         as a binary vector (same length as the number of physical qubits).

@@ -1,14 +1,16 @@
+from utils import state_to_braket, logical_zero, logical_one, plus_state, minus_state
+
+from decoders.repetition_decoder import RepetitionXDecoder
 from noise.phase_flip import PhaseFlipNoiseCollapsed
 from noise.bit_flip import BitFlipNoise
 from codes import RepetitionEncode
 
-from utils import state_to_braket, logical_zero, logical_one, plus_state, minus_state
-from noise import bit_flip
-import jax.numpy as jnp
 import jax.random as random
-import random as r
+import jax.numpy as jnp
 from jax import lax
 import jax
+
+import random as r
 
 # logical_zero = jnp.array([1.0, 0.0])  # Logical -> |0⟩     [1 0 0 0 0 0 0 0] (encoded)
 # logical_one = jnp.array([0.0, 1.0])  # Logical -> |1⟩     [0 0 0 0 0 0 0 1] (encoded)
@@ -175,68 +177,35 @@ def batched_bit_flip_example():
     print("\nNorms of noisy states (should be 1.0):", norms)
 
 
-def apply_correction(state: jnp.ndarray, correction: jnp.ndarray) -> jnp.ndarray:
-    """
-    Applies a Pauli X correction to each qubit indicated by correction bitmask.
-    """
-    num_qubits = correction.shape[0]
-    if state.ndim == 1:  # Collapsed state
-        index = jnp.argmax(state)
-        bits = jnp.array(list(jnp.binary_repr(index, num_qubits)), dtype=jnp.int32)
-        flipped = bits ^ correction
-        new_index = int("".join(flipped.astype(str)), 2)
-        new_state = jnp.zeros_like(state).at[new_index].set(1.0)
-        return new_state
-    else:
-        # For superpositions: flip amplitudes accordingly
-        indices = jnp.arange(state.shape[0])
-        for i in range(num_qubits):
-            if correction[i]:
-                bit_mask = 1 << (num_qubits - 1 - i)
-                indices = indices ^ bit_mask
-        return state[indices]
+def decoder_test():
 
-
-def run_qec_cycle():
-    # Initialize repetition code
     current = logical_zero  # |0⟩
     code = RepetitionEncode(3)
-    key = jax.random.PRNGKey(42)
+    key = jax.random.PRNGKey(r.randint(0,1000))
 
-    # current = code.encode(current)
+    print('Initial logical state:', current, '->', state_to_braket(current))
 
-    print(current)
+    current = code.encode(current)
+    print('Encoded logical state:', current, '->', state_to_braket(current))
 
-    # Apply bit-flip noise
+    # Bit-flip noise model
     noise = BitFlipNoise(p=1.0)
     key, subkey = jax.random.split(key)
-    currentc = noise.probability_flip(current, subkey, 0)
-    print("Noisy State:", currentc)
-    current = noise.apply(current, key)
-    print("Noisy State:", current)
 
-    # # Syndrome measurement
-    # syndrome = code.measure_syndrome_collapsed(noisy_state)
-    #
-    # # Decode
-    # decoder = RepetitionXDecoder(code)
-    # correction = decoder.decode(syndrome)
-    #
-    # # Apply correction
-    # corrected_state = apply_correction(noisy_state, correction)
-    #
-    # # Decode logical qubit
-    # decoded = code.decode_collapsed(corrected_state)
+    # current = noise.apply(current, key)
+    current = noise.probability_flip(current, key, 0)
+    print("Noisy State:", current, '->', state_to_braket(current))
 
-    # print("Original Encoded State:", encoded)
-    # print("Noisy State:", current)
-    # print("Syndrome:", syndrome)
-    # print("Correction:", correction)
-    # print("Corrected State:", corrected_state)
-    # print("Decoded Logical State:", decoded)
+    # Syndrome measurement
+    syndrome = code.measure_syndrome_collapsed(current)
+    print('Syndrome:', syndrome)
 
+    # Decode
+    decoder = RepetitionXDecoder(code)
+    current = decoder.decode(current, syndrome)
+    print('Decoded state:', current, '->', state_to_braket(current))
 
 
 if __name__ == "__main__":
-    run_qec_cycle()
+    decoder_test()
 
