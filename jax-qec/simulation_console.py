@@ -193,6 +193,7 @@ def decoder_test():
     key, subkey = jax.random.split(key)
 
     # current = noise.apply(current, key)
+    current = noise.probability_flip(current, key, 0)
     current = noise.probability_flip(current, key, 1)
     print("Noisy State:", current, '->', state_to_braket(current))
 
