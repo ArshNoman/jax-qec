@@ -1,3 +1,4 @@
+import jax
 import jax.numpy as jnp
 from .base import Decoder
 
@@ -23,8 +24,6 @@ class RepetitionXDecoder(Decoder):
 
         corrected_state = state_to_braket(current.copy())
         corrected_state_list = list(corrected_state[1:-1])  # Strip the '|' and '⟩'
-
-        # csb = ['1', '0', '0']
 
         for i in range(len(syndrome)):
             if syndrome[i] == 1 and syndrome[i+1] == 1:
