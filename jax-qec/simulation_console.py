@@ -138,14 +138,19 @@ def phase_flip_test():
 
 
 def main():
-    logical_state = logical_zero
-    code = RepetitionEncode(3)
-    noise_model = BitFlipNoise(0.2)
-    decoder = RepetitionXDecoder(code)
-    key = jax.random.PRNGKey(r.randint(1,2))
+    # logical_state = logical_zero
+    # code = RepetitionEncode(3)
+    # noise_model = BitFlipNoise(0.2)
+    # decoder = RepetitionXDecoder(code)
+    # key = jax.random.PRNGKey(r.randint(1,2))
+    #
+    # corrected = simulate_qec_cycle(logical_state, code, noise_model, decoder, key)
+    # print(corrected)
 
-    corrected = simulate_qec_cycle(logical_state, code, noise_model, decoder, key)
-    print(corrected)
+    current = minus_state
+    code = RepetitionEncode(3)
+    current = code.encode(current)
+    print('Encoded state:', current)
 
 
 

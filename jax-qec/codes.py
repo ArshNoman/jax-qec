@@ -41,11 +41,12 @@ class RepetitionEncode(QuantumCode):
         self.one = jnp.array([0.0, 1.0])
 
     def encode(self, logical_state: jnp.ndarray) -> jnp.ndarray:
-        logical_zero = self.zero
-        logical_one = self.one
-        for _ in range(self.n - 1):
-            logical_zero = jnp.kron(logical_zero, self.zero)
-            logical_one = jnp.kron(logical_one, self.one)
+        logical_zero = jnp.ones((2 ** self.n,))
+        logical_zero = logical_zero.at[1:].set(0)
+
+        logical_one = jnp.zeros((2 ** self.n,))
+        logical_one = logical_one.at[-1].set(1)
+
         return logical_state[0] * logical_zero + logical_state[1] * logical_one
 
     def measure(self, state: jnp.ndarray, key: jax.random.PRNGKey) -> jnp.ndarray:
