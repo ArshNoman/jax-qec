@@ -152,10 +152,10 @@ def main():
     current = code.encode(current)
     print('Encoded state:', current)
 
-    current = code.decode_collapsed(current)
+    key = jax.random.PRNGKey(r.randint(1, 2))
+
+    current = code.decode_superposition(current, key)
     print('Decoded state:', current)
-
-
 
 
 def batched_bit_flip_example():

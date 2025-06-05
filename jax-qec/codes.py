@@ -87,11 +87,16 @@ class RepetitionEncode(QuantumCode):
         Decodes a superposition state by first simulating measurement, then applying majority vote.
         """
 
-        if jnp.count_nonzero((state == 1)) == 1:
-            raise ValueError("decode_superposition() expects a state in superposition. Use decode_collapsed() for collapsed states.")
+        is_collapsed = jnp.count_nonzero(state == 1.0) == 1
 
-        collapsed = self.measure(state, key)
-        return self.decode_collapsed(collapsed)
+        def return_nan(_):
+            return jnp.array([jnp.nan, jnp.nan])  # signal: this is not a superposition
+
+        def proceed(_):
+            collapsed = self.measure(state, key)
+            return self.decode_collapsed(collapsed)
+
+        return jax.lax.cond(is_collapsed, return_nan, proceed, operand=None)
 
     def measure_syndrome_collapsed(self, state: jnp.ndarray) -> jnp.ndarray:
         """
