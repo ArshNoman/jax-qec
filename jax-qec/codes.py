@@ -106,14 +106,10 @@ class RepetitionEncode(QuantumCode):
             JAX array of length n-1 where each bit indicates parity disagreement (1 = error detected)
         """
 
-        index = int(jnp.argmax(jnp.abs(state)))
-        bits = list(bin(index)[2:].zfill(self.n))  # Ensure length matches number of qubits
+        index = jnp.argmax(jnp.abs(state))
 
-        syndrome = []
-        for i in range(self.n - 1):
-            b1 = int(bits[i])
-            b2 = int(bits[i + 1])
-            syndrome_bit = b1 ^ b2  # XOR: 0 if same, 1 if different
-            syndrome.append(syndrome_bit)
+        bits = jnp.right_shift(index, jnp.arange(self.n - 1, -1, -1)) & 1  # Convert index to bit representation (length n)
 
-        return jnp.array(syndrome)
+        syndrome = bits[:-1] ^ bits[1:]  # XOR adjacent bits to compute syndrome; shape (n-1,)
+
+        return syndrome
