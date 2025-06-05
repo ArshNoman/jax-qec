@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 from typing import Any
 
 import jax.numpy as jnp
+import jax.lax as lax
 import jax
 
 
@@ -66,16 +67,20 @@ class RepetitionEncode(QuantumCode):
         Decode a collapsed (basis) state by majority vote.
         """
 
-        if jnp.count_nonzero((physical_state != 0) & (physical_state != 1) & (physical_state != -1)) >= 1:
-            raise ValueError("decode_collapsed() expects a collapsed basis state. Use decode_superposition() for superpositions.")
+        invalid = jnp.any((physical_state != 0) & (physical_state != 1) & (physical_state != -1))
 
-        index = int(jnp.argmax(jnp.abs(physical_state)))
-        bits = jnp.array(list(bin(index)[2:].zfill(self.n)), dtype=int)
-        num_ones = int(jnp.sum(bits))
-        if num_ones > self.n // 2:
-            return jnp.array([0.0, 1.0])  # logical |1⟩
-        else:
-            return jnp.array([1.0, 0.0])  # logical |0⟩
+        def proceed(_):
+            index = jnp.argmax(jnp.abs(physical_state))
+            bits = jnp.right_shift(index[None], jnp.arange(self.n)[::-1]) & 1
+            num_ones = jnp.sum(bits)
+            return jnp.where(num_ones > self.n // 2,
+                             jnp.array([0.0, 1.0]),  # logical |1⟩
+                             jnp.array([1.0, 0.0]))  # logical |0⟩
+
+        def return_nan(_):
+            return jnp.array([jnp.nan, jnp.nan])  # error signal
+
+        return lax.cond(invalid, return_nan, proceed, operand=None)
 
     def decode_superposition(self, state: jnp.ndarray, key: jax.random.PRNGKey) -> jnp.ndarray:
         """

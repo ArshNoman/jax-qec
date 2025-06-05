@@ -147,10 +147,13 @@ def main():
     # corrected = simulate_qec_cycle(logical_state, code, noise_model, decoder, key)
     # print(corrected)
 
-    current = minus_state
+    current = plus_state
     code = RepetitionEncode(3)
     current = code.encode(current)
     print('Encoded state:', current)
+
+    current = code.decode_collapsed(current)
+    print('Decoded state:', current)
 
 
 
