@@ -3,7 +3,7 @@ import jax.numpy as jnp
 from jax import Array
 
 
-def is_logical_error(corrected_state: jnp.ndarray, logical_state: jnp.ndarray) -> bool:
+def is_logical_error(corrected_state: jnp.ndarray, logical_state: jnp.ndarray) -> jnp.bool:
     """
     Check if corrected state corresponds to the input logical state.
 
@@ -14,7 +14,7 @@ def is_logical_error(corrected_state: jnp.ndarray, logical_state: jnp.ndarray) -
     Returns:
     - True if logical error occurred
     """
-    return not jnp.allclose(corrected_state, logical_state, atol=1e-4)
+    return jnp.logical_not(jnp.allclose(corrected_state, logical_state, atol=1e-4))
 
 
 def estimate_error_rate(logical_state: jnp.ndarray, code, noise_model, decoder, key, trials: int = 1000) -> Array:

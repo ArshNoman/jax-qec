@@ -138,30 +138,17 @@ def phase_flip_test():
 
 
 def main():
-    # logical_state = logical_zero
-    # code = RepetitionEncode(3)
-    # noise_model = BitFlipNoise(0.2)
-    # decoder = RepetitionXDecoder(code)
-    # key = jax.random.PRNGKey(r.randint(1,2))
-    #
-    # corrected = simulate_qec_cycle(logical_state, code, noise_model, decoder, key)
-    # print(corrected)
-
     current = logical_zero
     code = RepetitionEncode(3)
-    current = code.encode(current)
-    print('Encoded state:', current)
+    noise = BitFlipNoise(0.3)
+    decoder = RepetitionXDecoder(code)
+    key = jax.random.PRNGKey(0)
 
-    key = jax.random.PRNGKey(r.randint(1, 2))
+    err_rate = estimate_logical_error_rate(
+        current, code=code, noise_model=noise, decoder=repetition_decoder, key=key, trials=1000
+    )
 
-    # current = code.decode_collapsed(current)
-    # print('Decoded state:', current)
-
-    current = bit_flip(current, 1)
-    print(state_to_braket(current))
-
-    syndrome = code.measure_syndrome_collapsed(current)
-    print(syndrome)
+    print("Logical Error Rate:", err_rate)
 
 
 def batched_bit_flip_example():
