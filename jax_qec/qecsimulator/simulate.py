@@ -1,3 +1,6 @@
+import jax
+
+
 def simulate_superposition(logical_state, code, noise_model, decoder, key):
     """
     Simulate a full QEC cycle:
@@ -17,10 +20,10 @@ def simulate_superposition(logical_state, code, noise_model, decoder, key):
     Returns:
     - corrected_state: jnp.ndarray, shape (2^n,)
     """
-    key1, key2 = split(key)
+    key, subkey = jax.random.split(key)
     encoded = code.encode(logical_state)
-    noisy = noise_model.apply(encoded, key1)
-    collapsed = code.measure_superposition(noisy, key2)
+    noisy = noise_model.apply(encoded, key)
+    collapsed = code.measure(noisy, subkey)
     syndrome = code.measure_syndrome_collapsed(collapsed)
     corrected = decoder.decode(collapsed, syndrome)
     return corrected

@@ -141,9 +141,9 @@ def phase_flip_test():
 def main():
     current = plus_state
     code = RepetitionEncode(3)
-    noise = BitFlipNoise(0.3)
+    noise = BitFlipNoise(0.8)
     decoder = RepetitionXDecoder(code)
-    key = jax.random.PRNGKey(0)
+    key = jax.random.PRNGKey(432)
 
     err_rate = estimate_error_rate(current, code=code, noise_model=noise, decoder=decoder, key=key, trials=1000)
 

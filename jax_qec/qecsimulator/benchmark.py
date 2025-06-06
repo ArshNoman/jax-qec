@@ -16,7 +16,9 @@ def is_logical_error(corrected_state: jnp.ndarray, logical_state: jnp.ndarray) -
     Returns:
     - True if logical error occurred
     """
-    return jnp.logical_not(jnp.allclose(corrected_state, logical_state, atol=1e-4))
+    corrected_index = jnp.argmax(jnp.abs(corrected_state))
+    logical_index = jnp.argmax(jnp.abs(logical_state))
+    return corrected_index != logical_index
 
 
 def estimate_error_rate(logical_state: jnp.ndarray, code, noise_model, decoder, key, trials: int = 1000) -> Array:
