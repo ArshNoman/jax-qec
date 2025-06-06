@@ -1,6 +1,8 @@
-import jax
+from qecsimulator.simulate import simulate_superposition
+
 import jax.numpy as jnp
 from jax import Array
+import jax
 
 
 def is_logical_error(corrected_state: jnp.ndarray, logical_state: jnp.ndarray) -> jnp.bool:
@@ -27,7 +29,7 @@ def estimate_error_rate(logical_state: jnp.ndarray, code, noise_model, decoder, 
     keys = jax.random.split(key, trials)
 
     def run_trial(k):
-        corrected = simulate_qec_cycle(logical_state, code, noise_model, decoder, k)
+        corrected = simulate_superposition(logical_state, code, noise_model, decoder, k)
         return is_logical_error(corrected, logical_state)
 
     results = jax.vmap(run_trial)(keys)

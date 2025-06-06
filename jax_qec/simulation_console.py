@@ -1,8 +1,9 @@
 from utils import state_to_braket, logical_zero, logical_one, plus_state, minus_state, bit_flip
 
+from qecsimulator.benchmark import estimate_error_rate
 from decoders.repetition_decoder import RepetitionXDecoder
+from qecsimulator.simulate import simulate_superposition
 from noise.phase_flip import PhaseFlipNoiseCollapsed
-from simulator.simulate import simulate_qec_cycle
 from noise.bit_flip import BitFlipNoise
 from codes import RepetitionEncode
 
@@ -138,15 +139,13 @@ def phase_flip_test():
 
 
 def main():
-    current = logical_zero
+    current = plus_state
     code = RepetitionEncode(3)
     noise = BitFlipNoise(0.3)
     decoder = RepetitionXDecoder(code)
     key = jax.random.PRNGKey(0)
 
-    err_rate = estimate_logical_error_rate(
-        current, code=code, noise_model=noise, decoder=repetition_decoder, key=key, trials=1000
-    )
+    err_rate = estimate_error_rate(current, code=code, noise_model=noise, decoder=decoder, key=key, trials=1000)
 
     print("Logical Error Rate:", err_rate)
 
