@@ -2,7 +2,7 @@ from utils import state_to_braket, logical_zero, logical_one, plus_state, minus_
 
 from decoders.repetition_decoder import RepetitionXDecoder
 from noise.phase_flip import PhaseFlipNoiseCollapsed
-from simulator import simulate_qec_cycle
+from simulator.simulate import simulate_qec_cycle
 from noise.bit_flip import BitFlipNoise
 from codes import RepetitionEncode
 
