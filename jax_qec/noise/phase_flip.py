@@ -27,12 +27,12 @@ class PhaseFlipNoise(NoiseModel):
         - Modified state with phase flips applied
         """
         is_batched = state.ndim == 2
-        n_qubits = int(jnp.log2(state.shape[-1]))
+        n_qubits = int(jnp.log2(state.shape[-1]))  # Safe here
 
         def flip_each_qubit(state_i, key_i):
             for q in range(n_qubits):
                 key_i, subkey = random.split(key_i)
-                state_i = self.flip_qubit(state_i, subkey, q)
+                state_i = self.flip_qubit(state_i, subkey, q, n_qubits)
             return state_i
 
         if is_batched:
@@ -41,7 +41,7 @@ class PhaseFlipNoise(NoiseModel):
         else:
             return flip_each_qubit(state, key)
 
-    def flip_qubit(self, state: jnp.ndarray, key, qubit_index: int) -> jnp.ndarray:
+    def flip_qubit(self, state: jnp.ndarray, key, qubit_index: int, n_qubits: int) -> jnp.ndarray:
         """
         Apply a phase-flip (Z gate) to a specific qubit with probability p.
 
@@ -56,11 +56,9 @@ class PhaseFlipNoise(NoiseModel):
         should_flip = random.bernoulli(key, self.p)
 
         def apply_z(state_):
-            n_qubits = int(jnp.log2(state_.shape[0]))
             indices = jnp.arange(state_.shape[0])
-            # A Z gate flips the sign of basis states where the qubit is 1
             mask = (indices >> (n_qubits - 1 - qubit_index)) & 1
-            phase = 1 - 2 * mask  # 1 if qubit is 0, -1 if qubit is 1
+            phase = 1 - 2 * mask  # 1 if 0, -1 if 1
             return state_ * phase
 
         return lax.cond(should_flip, apply_z, lambda x: x, state)

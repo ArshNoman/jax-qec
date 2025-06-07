@@ -3,7 +3,7 @@ from utils import state_to_braket, logical_zero, logical_one, plus_state, minus_
 from qecsimulator.benchmark import estimate_error_rate
 from decoders.repetition_decoder import RepetitionXDecoder
 from qecsimulator.simulate import simulate_superposition
-from noise.phase_flip import PhaseFlipNoiseCollapsed
+from noise.phase_flip import PhaseFlipNoise
 from noise.bit_flip import BitFlipNoise
 from codes import RepetitionEncode
 
@@ -105,37 +105,25 @@ def bit_flip_test():
 
 
 def phase_flip_test():
+    key = jax.random.PRNGKey(42)
+    noise = PhaseFlipNoise(p=1.0)
 
-    key = jax.random.PRNGKey(123)
+    # Encode states using repetition code
+    encoder = RepetitionEncode(3)
+    encoded_zero = encoder.encode(logical_zero)
+    encoded_plus = encoder.encode(plus_state)
 
-    current = logical_one
-    print("Logical State:", state_to_braket(current))
-
-    # 1. Encode using 3-qubit repetition code
-    code = RepetitionEncode(3)
-    current = code.encode(current)
-    print("Encoded State:", state_to_braket(current))
-
-    noise_model = PhaseFlipNoiseCollapsed(p=1.0)
-
-    # 2. Test probability_flip() on qubit 1
+    # Apply noise
+    noisy_zero = noise.apply(encoded_zero, key)
     key, subkey = jax.random.split(key)
-    current = noise_model.probability_flip(current, subkey, qubit_index=1)
-    print("After probability_flip on qubit 1:", state_to_braket(current))
+    noisy_plus = noise.apply(encoded_plus, subkey)
 
-    # 3. Test _flip_phase_if_one() directly on qubit 2
-    key, subkey = jax.random.split(key)
-    current = noise_model.flip_phase_if_one(current, subkey, qubit_index=2)
-    print("After flip_phase_if_one on qubit 2:", state_to_braket(current))
+    print("Original Encoded Logical Zero:", encoded_zero)
+    print("Noisy Logical Zero (should remain unchanged):", noisy_zero)
 
-    # 4. Test apply() across all qubits (this will phase flip again on qubit 1 and 2)
-    key, subkey = jax.random.split(key)
-    current = noise_model.apply(current, subkey)
-    print("After apply() to all qubits:", state_to_braket(current))
+    print("\nOriginal Encoded Logical Plus:", encoded_plus)
+    print("Noisy Logical Plus (phases should flip):", noisy_plus)
 
-    # 5. Decode and print result
-    current = code.decode_collapsed(current)
-    print("Decoded Logical State:", state_to_braket(current))
 
 
 def main():
@@ -210,5 +198,5 @@ def decoder_test():
 
 
 if __name__ == "__main__":
-    batched_bit_flip_example()
+    phase_flip_test()
 
