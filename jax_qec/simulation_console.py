@@ -156,16 +156,14 @@ def batched_bit_flip_example():
     key = random.PRNGKey(0)
     noise_model = BitFlipNoise(p=1.0)  # Always flip for clarity
 
-    # Create a batch of two superposition states: (|000⟩ + |111⟩) / √2
-    plus_state = jnp.zeros(8)
-    plus_state = plus_state.at[0].set(1 / jnp.sqrt(2))
-    plus_state = plus_state.at[7].set(1 / jnp.sqrt(2))
 
     batch = jnp.stack([plus_state, plus_state])  # shape = (2, 8)
 
+    print(batch)
+
     print("Original Batch:")
     for i, state in enumerate(batch):
-        print(f"  State {i}:", state_to_braket(state))
+        print(f"  State {i}:", state)
 
     # Apply bit-flip noise
     key, subkey = random.split(key)
@@ -173,7 +171,7 @@ def batched_bit_flip_example():
 
     print("\nNoisy Batch (after bit flips on all qubits):")
     for i, state in enumerate(noisy_batch):
-        print(f"  State {i}:", state_to_braket(state))
+        print(f"  State {i}:", state)
 
     # Optional: Confirm norms
     norms = jnp.linalg.norm(noisy_batch, axis=1)
@@ -211,5 +209,5 @@ def decoder_test():
 
 
 if __name__ == "__main__":
-    main()
+    batched_bit_flip_example()
 
