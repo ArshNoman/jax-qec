@@ -154,10 +154,11 @@ def batched_bit_flip_example():
     print("=== Batched Bit Flip Noise Test ===")
 
     key = random.PRNGKey(0)
-    noise_model = BitFlipNoise(p=1.0)  # Always flip for clarity
+    noise_model = BitFlipNoise(p=1.0)
+    code = RepetitionEncode(3)
 
 
-    batch = jnp.stack([plus_state, plus_state])  # shape = (2, 8)
+    batch = jnp.stack([code.encode(plus_state), code.encode(plus_state)])  # shape = (2, 8)
 
     print(batch)
 
