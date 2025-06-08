@@ -1,15 +1,17 @@
 from utils import state_to_braket, logical_zero, logical_one, plus_state, minus_state, bit_flip
 
-from qecsimulator.benchmark import estimate_error_rate
 from decoders.repetition_decoder import RepetitionXDecoder
 from qecsimulator.simulate import simulate_superposition
+from qecsimulator.benchmark import estimate_error_rate
 from noise.phase_flip import PhaseFlipNoise
+from discovery.rl_discoverer import QECEnv
 from noise.bit_flip import BitFlipNoise
 from codes import RepetitionEncode
 
 import jax.random as random
 import jax.numpy as jnp
 from jax import lax
+import numpy as np
 import jax
 
 import random as r
@@ -133,8 +135,6 @@ def main():
 
 
 def batched_bit_flip_example():
-    print("=== Batched Bit Flip Noise Test ===")
-
     key = random.PRNGKey(0)
     noise_model = BitFlipNoise(p=1.0)
     code = RepetitionEncode(3)
@@ -191,6 +191,29 @@ def decoder_test():
     print('Decoded state:', current, '->', state_to_braket(current))
 
 
+def rl_qec_env(num_episodes=5):
+    env = QECEnv()
+
+    for ep in range(num_episodes):
+        print(f"\n--- Episode {ep + 1} ---")
+        state = env.reset()
+        print("Initial state:\n", state)
+
+        done = False
+        step = 0
+        while not done:
+            action = np.random.randint(0, len(env.possible_generators))
+            next_state, reward, done, _ = env.step(action)
+
+            print(f"\nStep {step + 1}:")
+            print(f"  Action (index): {action}")
+            print(f"  Generator added: {env.possible_generators[action]}")
+            print(f"  New state:\n{next_state}")
+            print(f"  Reward: {reward}")
+            print(f"  Done: {done}")
+            step += 1
+
+
 if __name__ == "__main__":
-    codes_test()
+    rl_qec_env()
 
