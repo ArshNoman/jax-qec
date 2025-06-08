@@ -15,18 +15,18 @@ import jax
 import random as r
 
 def codes_test():
-    code = RepetitionEncode(5)
+    code = RepetitionEncode(3)
 
-    current = jnp.array([0.0, -1.0])
-    print("Encoded state:", current)
-    # print("Current state:", current, "->", state_to_braket(current))
+    current = logical_zero
+    #print("Encoded state:", current)
+    print("Current state:", current, "->", state_to_braket(current))
 
     current = code.encode(current)
-    print("Encoded state:\n", current)
-    # print("Encoded state:\n", current, "->", state_to_braket(current))
+    #print("Encoded state:\n", current)
+    print("Encoded state:\n", current, "->", state_to_braket(current))
 
-    # current = bit_flip(current, 0)
-    # print("Flipped encoded state:", state_to_braket(current))
+    current = bit_flip(current, 0)
+    print("Flipped encoded state:", state_to_braket(current))
     # current = bit_flip(current, 1)
     # print("Flipped encoded state:", state_to_braket(current))
     # current = bit_flip(current, 2)
@@ -191,5 +191,5 @@ def decoder_test():
 
 
 if __name__ == "__main__":
-    phase_flip_test()
+    codes_test()
 
