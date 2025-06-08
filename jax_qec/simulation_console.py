@@ -14,12 +14,6 @@ import jax
 
 import random as r
 
-# logical_zero = jnp.array([1.0, 0.0])  # Logical -> |0⟩     [1 0 0 0 0 0 0 0] (encoded)
-# logical_one = jnp.array([0.0, 1.0])  # Logical -> |1⟩     [0 0 0 0 0 0 0 1] (encoded)
-# plus_state = jnp.array([1.0 / jnp.sqrt(2), 1.0 / jnp.sqrt(2)])  # |+⟩ state -> [1/√2, 1/√2]     [0.70710677 0 0 0 0 0 0 0.70710677]
-# minus_state = jnp.array([1.0 / jnp.sqrt(2), -1.0 / jnp.sqrt(2)])  # |-⟩ state -> [1/√2, -1/√2]     [0.70710677 0 0 0 0 0 0 -0.70710677]
-
-
 def codes_test():
     code = RepetitionEncode(5)
 
@@ -123,7 +117,6 @@ def phase_flip_test():
 
     print("\nOriginal Encoded Logical Plus:", encoded_plus)
     print("Noisy Logical Plus (phases should flip):", noisy_plus)
-
 
 
 def main():

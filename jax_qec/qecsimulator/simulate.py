@@ -11,7 +11,7 @@ def simulate_superposition(logical_state, code, noise_model, decoder, key):
     - Return corrected state
 
     Parameters:
-    - logical_state: jnp.ndarray, shape (2,) for |0⟩ or |1⟩
+    - logical_state: jnp.ndarray, shape (2) for |0⟩ or |1⟩
     - code: instance of RepetitionEncode or similar
     - noise_model: instance of BitFlipNoise, PhaseFlipNoise, etc.
     - decoder: instance of a Decoder subclass
