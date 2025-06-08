@@ -14,6 +14,7 @@ import jax
 
 import random as r
 
+
 def codes_test():
     code = RepetitionEncode(3)
 
