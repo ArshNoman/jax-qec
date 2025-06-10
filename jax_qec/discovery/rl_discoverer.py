@@ -1,4 +1,4 @@
-from utils.symplectic_utils import generate_all_symplectic_generators
+from discovery.discoverer_utils import generate_all_symplectic_generators
 
 import jax.numpy as jnp
 import numpy as np
