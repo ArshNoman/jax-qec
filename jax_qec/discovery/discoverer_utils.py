@@ -71,3 +71,21 @@ def valid_nk_code(generators: List[jnp.ndarray], n: int, k: int) -> bool:
     if len(generators) != n - k:
         return False
     return is_valid_stabilizer_set(generators)
+
+
+def diagnostics(generators, n, k):
+    """
+    Returns a string explaining why the stabilizer set is invalid.
+    """
+    reasons = []
+
+    if len(generators) != n - k:
+        reasons.append(f"Expected {n - k} generators, got {len(generators)}.")
+
+    if not all_commute(generators):
+        reasons.append("Generators do not commute pairwise.")
+
+    if not are_independent(generators):
+        reasons.append("Generators are linearly dependent.")
+
+    return " | ".join(reasons) if reasons else "Valid stabilizer set."

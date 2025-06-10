@@ -1,5 +1,4 @@
 from utils import state_to_braket, logical_zero, logical_one, plus_state, minus_state, bit_flip
-from discovery.discoverer_utils import is_valid_stabilizer_set, valid_nk_code
 
 from decoders.repetition_decoder import RepetitionXDecoder
 from qecsimulator.simulate import simulate_superposition
@@ -193,8 +192,7 @@ def decoder_test():
 def rl_qec_env():
     env = QECEnv()
     state = env.reset()
-    print("Initial state:")
-    print(state)
+    print("Initial state ([x1 x2 x3 | z1 z2 z3]):\n", state)
 
     done = False
     total_reward = 0
@@ -202,15 +200,15 @@ def rl_qec_env():
 
     while not done:
         action = np.random.choice(len(env.possible_generators))
-        print(f"\nStep {step_num + 1}: Taking action {action}")
+        print(f"\nStep {step_num + 1}: Taking action {action}", f"({env.possible_generators[action]})")
 
         state, reward, done, info = env.step(action)
 
-        print("New state:")
-        print(state)
-
-        print("Reward received:", reward)
-        print("Episode done?", done)
+        if 1 in state[1]:
+            print("New state: ([x1 x2 x3 | z1 z2 z3]):\n", state)
+            print("Reward received:", reward)
+            if done:
+                print('Done')
 
         total_reward += reward
         step_num += 1
@@ -263,4 +261,4 @@ def stabilizer_validation():
 
 
 if __name__ == "__main__":
-    stabilizer_validation()
+    rl_qec_env()
