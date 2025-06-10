@@ -2,7 +2,7 @@ from discovery.discoverer_utils import generate_all_symplectic_generators, valid
 from decoders.repetition_decoder import RepetitionXDecoder
 from qecsimulator.benchmark import estimate_error_rate
 from noise.bit_flip import BitFlipNoise
-from codes import RepetitionEncode
+from codes import StabilizerCode
 from utils import logical_zero
 
 
@@ -54,7 +54,7 @@ class QECEnv:
         reward = 0.0
         if len(self.generators) == self.max_steps and self.is_valid_code():
             # Build a code object from the symplectic generators
-            code = RepetitionEncode(len(self.generators))
+            code = StabilizerCode(self.generators)
             noise = BitFlipNoise(p=0.05)
             decoder = RepetitionXDecoder(code)
             key = jax.random.PRNGKey(np.random.randint(0, 1e6))
