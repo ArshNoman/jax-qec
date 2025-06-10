@@ -1,8 +1,9 @@
 from discovery.discoverer_utils import generate_all_symplectic_generators, valid_nk_code, diagnostics
 
-import jax.numpy as jnp
-import numpy as np
 from typing import List, Tuple
+import jax.numpy as jnp
+import flax.linen as nn
+import numpy as np
 
 
 class QECEnv:
@@ -88,3 +89,20 @@ class RLCodeDiscoverer:
                 for g in self.best_code:
                     print(g)
                 print("Reward:", self.best_reward)
+
+
+class PolicyNet(nn.Module):
+    action_dim: int
+
+    @nn.compact
+    def __call__(self, state: jnp.ndarray) -> jnp.ndarray:
+        """
+        Forward pass:
+        - state shape: (max_steps, 2n)
+        - returns: action probabilities (shape: [action_dim])
+        """
+        x = state.flatten()
+        x = nn.Dense(128)(x)
+        x = nn.relu(x)
+        x = nn.Dense(self.action_dim)(x)
+        return nn.softmax(x)
