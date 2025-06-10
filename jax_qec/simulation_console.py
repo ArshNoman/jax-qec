@@ -260,10 +260,10 @@ def stabilizer_validation():
     print("Example 4 - [IZZ, ZZI, ZIZ]:", valid_nk_code([s6, s7, s8], n, k))
 
 
-# def rlagent():
-#     env = QECEnv()
-#     agent = RLCodeDiscoverer(env)
-#     agent.search(num_episodes=5000)
+def rlagent():
+    env = QECEnv(5, 1)
+    agent = RLCodeDiscoverer(env)
+    agent.search(num_episodes=100)
 
 
 if __name__ == "__main__":

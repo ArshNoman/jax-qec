@@ -6,22 +6,18 @@ import jax.numpy as jnp
 import flax.linen as nn
 import numpy as np
 import optax
+import jax
 
 
 class QECEnv:
-    def __init__(self):
+    def __init__(self, n, k=1):
         self.step_count = None
         self.generators = None
-        self.n = 3  # Number of physical qubits
-        self.k = 1  # Number of logical qubits
+        self.n = n  # Number of physical qubits
+        self.k = k  # Number of logical qubits
         self.max_steps = self.n - self.k  # = 2 stabilizer generators
-        self.possible_generators = [
-            jnp.array([1, 1, 0]),  # ZZI
-            jnp.array([0, 1, 1]),  # IZZ
-            jnp.array([1, 0, 1]),  # ZIZ (invalid for repetition code)
-        ]
-
         self.possible_generators = generate_all_symplectic_generators(self.n)
+
         self.reset()
 
     def reset(self) -> jnp.ndarray:
@@ -49,7 +45,11 @@ class QECEnv:
         done = self.step_count >= self.max_steps
 
         valid = valid_nk_code(self.generators, self.n, self.k)
-        reward = float(valid)
+        if len(self.generators) == self.max_steps and self.is_valid_code():
+            logical_error_rate = simulate_superposition(self.generators)
+            reward = jnp.clip(1.0 - logical_error_rate, 0.0, 1.0)
+        else:
+            reward = 0.0
 
         info = {
             "valid": valid,
@@ -93,7 +93,7 @@ class RLCodeDiscoverer:
         return -jnp.mean(log_probs * returns)
 
     def train_step(self, log_probs, rewards):
-        def loss_fn():
+        def loss_fn(param):
             return self.compute_loss(log_probs, rewards)
         grads = jax.grad(loss_fn)(self.state.params)
         self.state = self.state.apply_gradients(grads=grads)
@@ -122,6 +122,9 @@ class RLCodeDiscoverer:
                 print(f"\nEpisode {ep}: Reward = {total_reward}")
                 for g in self.env.generators:
                     print(g)
+
+            probs = self.policy.apply(self.state.params, state)
+            print("Action probabilities:", probs)
 
 
 class PolicyNet(nn.Module):
