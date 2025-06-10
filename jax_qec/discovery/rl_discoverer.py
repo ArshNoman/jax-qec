@@ -1,9 +1,11 @@
 from discovery.discoverer_utils import generate_all_symplectic_generators, valid_nk_code, diagnostics
 
+from flax.training.train_state import TrainState
 from typing import List, Tuple
 import jax.numpy as jnp
 import flax.linen as nn
 import numpy as np
+import optax
 
 
 class QECEnv:
@@ -64,31 +66,18 @@ class QECEnv:
 
 
 class RLCodeDiscoverer:
-    def __init__(self, env: QECEnv):
+    def __init__(self, env: QECEnv, seed: int = 0, learning_rate: float = 1e-2):
         self.env = env
-        self.best_code = None
-        self.best_reward = -1
+        self.key = jax.random.PRNGKey(seed)
+        self.policy = PolicyNet(action_dim=len(env.possible_generators))
 
-    def search(self, num_episodes=1000):
-        for ep in range(num_episodes):
-            state = self.env.reset()
-            done = False
-            total_reward = 0
-            actions = []
+        # Initialize parameters
+        dummy_state = jnp.zeros((env.max_steps, 2 * env.n))
+        self.params = self.policy.init(self.key, dummy_state)
 
-            while not done:
-                action = np.random.choice(len(self.env.possible_generators))
-                actions.append(action)
-                state, reward, done, info = self.env.step(action)
-                total_reward += reward
-
-            if total_reward > self.best_reward:
-                self.best_reward = total_reward
-                self.best_code = list(self.env.generators)
-                print(f"\nNew Best Code (Ep {ep}):")
-                for g in self.best_code:
-                    print(g)
-                print("Reward:", self.best_reward)
+        # Optimizer
+        self.optimizer = optax.adam(learning_rate)
+        self.state = TrainState.create(apply_fn=self.policy.apply, params=self.params, tx=self.optimizer)
 
 
 class PolicyNet(nn.Module):
