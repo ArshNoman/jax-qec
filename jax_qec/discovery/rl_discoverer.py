@@ -79,6 +79,50 @@ class RLCodeDiscoverer:
         self.optimizer = optax.adam(learning_rate)
         self.state = TrainState.create(apply_fn=self.policy.apply, params=self.params, tx=self.optimizer)
 
+    def sample_action(self, state, key):
+        probs = self.policy.apply(self.state.params, state)
+        action = jax.random.choice(key, a=probs.shape[0], p=probs)
+        return int(action), probs
+
+    def compute_loss(self, log_probs, rewards):
+        """
+        REINFORCE loss: L = -E[log(pi(a|s)) * reward]
+        """
+        returns = jnp.array(rewards)
+        log_probs = jnp.stack(log_probs)
+        return -jnp.mean(log_probs * returns)
+
+    def train_step(self, log_probs, rewards):
+        def loss_fn():
+            return self.compute_loss(log_probs, rewards)
+        grads = jax.grad(loss_fn)(self.state.params)
+        self.state = self.state.apply_gradients(grads=grads)
+
+    def search(self, num_episodes=500):
+        for ep in range(num_episodes):
+            state = self.env.reset()
+            done = False
+            log_probs = []
+            rewards = []
+            self.key, subkey = jax.random.split(self.key)
+
+            while not done:
+                subkey, sk = jax.random.split(subkey)
+                action, probs = self.sample_action(state, sk)
+                log_prob = jnp.log(probs[action] + 1e-8)  # avoid log(0)
+                state, reward, done, info = self.env.step(action)
+
+                log_probs.append(log_prob)
+                rewards.append(reward)
+
+            total_reward = sum(rewards)
+            self.train_step(log_probs, rewards)
+
+            if total_reward > 0:
+                print(f"\nEpisode {ep}: Reward = {total_reward}")
+                for g in self.env.generators:
+                    print(g)
+
 
 class PolicyNet(nn.Module):
     action_dim: int

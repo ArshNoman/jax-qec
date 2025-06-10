@@ -261,9 +261,9 @@ def stabilizer_validation():
 
 
 def rlagent():
-    env = QECEnv()
-    agent = RLCodeDiscoverer(env)
-    agent.search(num_episodes=500)
+    # env = QECEnv()
+    # agent = RLCodeDiscoverer(env)
+    # agent.search(num_episodes=500)
 
 
 if __name__ == "__main__":
