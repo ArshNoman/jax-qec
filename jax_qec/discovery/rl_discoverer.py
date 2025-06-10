@@ -5,32 +5,34 @@ from typing import List, Tuple
 
 class QECEnv:
     def __init__(self):
-        self.n = 3  # 3 physical qubits
-        self.k = 1  # 1 logical qubit
-        self.max_steps = self.n - self.k
+        self.n = 3  # Number of physical qubits
+        self.k = 1  # Number of logical qubits
+        self.max_steps = self.n - self.k  # = 2 stabilizer generators
         self.possible_generators = [
-            jnp.array([1, 1, 0]),  # XX_
-            jnp.array([0, 1, 1]),  # _XX
-            jnp.array([1, 0, 1]),  # X_X
+            jnp.array([1, 1, 0]),  # ZZI
+            jnp.array([0, 1, 1]),  # IZZ
+            jnp.array([1, 0, 1]),  # ZIZ (invalid for repetition code)
         ]
         self.reset()
 
     def reset(self) -> jnp.ndarray:
+        """Resets the environment to an empty code."""
         self.generators: List[jnp.ndarray] = []
         self.step_count = 0
         return self._get_state()
 
     def _get_state(self) -> jnp.ndarray:
-        # Pad with zeros to get shape (max_steps, n)
-        if len(self.generators) == 0:
-            return jnp.zeros((self.max_steps, self.n))
-        else:
-            padded = jnp.zeros((self.max_steps, self.n))
-            for i, g in enumerate(self.generators):
-                padded = padded.at[i].set(g)
-            return padded
+        """Returns the padded stabilizer matrix as current state."""
+        padded = jnp.zeros((self.max_steps, self.n))
+        for i, g in enumerate(self.generators):
+            padded = padded.at[i].set(g)
+        return padded
 
     def step(self, action: int) -> Tuple[jnp.ndarray, float, bool, dict]:
+        """
+        Executes an action by adding a stabilizer generator from the predefined list.
+        Returns: new_state, reward, done, info
+        """
         gen = self.possible_generators[action]
         self.generators.append(gen)
         self.step_count += 1
@@ -40,7 +42,10 @@ class QECEnv:
         return self._get_state(), reward, done, {}
 
     def is_valid_code(self) -> bool:
-        # Check if we have exactly 2 independent generators
+        """
+        A valid [[3,1]] repetition code requires 2 linearly independent Z-type
+        generators. We check if the current stabilizers meet that condition.
+        """
         if len(self.generators) != self.max_steps:
             return False
         mat = jnp.stack(self.generators)
