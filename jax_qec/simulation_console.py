@@ -191,27 +191,32 @@ def decoder_test():
     print('Decoded state:', current, '->', state_to_braket(current))
 
 
-def rl_qec_env(num_episodes=5):
+def rl_qec_env():
     env = QECEnv()
+    state = env.reset()
+    print("Initial state:")
+    print(state)
 
-    for ep in range(num_episodes):
-        print(f"\n--- Episode {ep + 1} ---")
-        state = env.reset()
-        print("Initial state:\n", state)
+    done = False
+    total_reward = 0
+    step_num = 0
 
-        done = False
-        step = 0
-        while not done:
-            action = np.random.randint(0, len(env.possible_generators))
-            next_state, reward, done, _ = env.step(action)
+    while not done:
+        action = np.random.choice(len(env.possible_generators))
+        print(f"\nStep {step_num + 1}: Taking action {action}")
 
-            print(f"\nStep {step + 1}:")
-            print(f"  Action (index): {action}")
-            print(f"  Generator added: {env.possible_generators[action]}")
-            print(f"  New state:\n{next_state}")
-            print(f"  Reward: {reward}")
-            print(f"  Done: {done}")
-            step += 1
+        state, reward, done, info = env.step(action)
+
+        print("New state:")
+        print(state)
+
+        print("Reward received:", reward)
+        print("Episode done?", done)
+
+        total_reward += reward
+        step_num += 1
+
+    print(f"\nTotal reward: {total_reward}")
 
 
 if __name__ == "__main__":
