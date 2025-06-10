@@ -15,7 +15,7 @@ class QECEnv:
             jnp.array([0, 1, 1]),  # IZZ
             jnp.array([1, 0, 1]),  # ZIZ (invalid for repetition code)
         ]
-        
+
         self.possible_generators = generate_all_symplectic_generators(self.n)
         self.reset()
 
@@ -42,7 +42,10 @@ class QECEnv:
         self.step_count += 1
         done = self.step_count >= self.max_steps
 
-        reward = float(self.is_valid_code())
+        reward = float(
+            len(self.generators) == self.max_steps and
+            is_valid_stabilizer_set(self.generators)
+        )
         return self._get_state(), reward, done, {}
 
     def is_valid_code(self) -> bool:
