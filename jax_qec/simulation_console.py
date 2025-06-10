@@ -22,11 +22,11 @@ def codes_test():
     code = RepetitionEncode(3)
 
     current = logical_zero
-    #print("Encoded state:", current)
+    # print("Encoded state:", current)
     print("Current state:", current, "->", state_to_braket(current))
 
     current = code.encode(current)
-    #print("Encoded state:\n", current)
+    # print("Encoded state:\n", current)
     print("Encoded state:\n", current, "->", state_to_braket(current))
 
     current = bit_flip(current, 0)
@@ -140,7 +140,6 @@ def batched_bit_flip_example():
     noise_model = BitFlipNoise(p=1.0)
     code = RepetitionEncode(3)
 
-
     batch = jnp.stack([code.encode(plus_state), code.encode(plus_state)])  # shape = (2, 8)
 
     print(batch)
@@ -163,10 +162,9 @@ def batched_bit_flip_example():
 
 
 def decoder_test():
-
     current = logical_zero  # |0⟩
     code = RepetitionEncode(3)
-    key = jax.random.PRNGKey(r.randint(0,1000))
+    key = jax.random.PRNGKey(r.randint(0, 1000))
 
     print('Initial logical state:', current, '->', state_to_braket(current))
 
@@ -192,7 +190,7 @@ def decoder_test():
     print('Decoded state:', current, '->', state_to_braket(current))
 
 
-def old_rl_qec_env():
+def rl_qec_env():
     env = QECEnv()
     state = env.reset()
     print("Initial state:")
@@ -221,6 +219,20 @@ def old_rl_qec_env():
 
 
 def stabilizer_validation():
+    """
+    Two operators commute if the order in which you apply them doesn't matter: AB = BA
+    In stabilizer codes, this is critical: all generators must commute so they can be
+    simultaneously diagonalizable i.e. share a common +1 eigenspace (the code space).
+
+    Symplectic form: We represent each n-qubit Pauli operator as a binary vector
+    of length 2n: [x|z] where xi = 1 if the operator X is on qubit i and similarly,
+    zi = 1 if the operator Z is on qubit i.
+
+    Commuting in symplectic form: Let p1 = [x1|z1] and p2 = [x2|z2]
+    They commute iff x1*z2 + x2*z1 = 0 mod 2 (symplectic inner product)
+    If it's 0 mod 2, they commute. If it's 1 then they anti-commute.
+    """
+
     def to_symplectic(x_str, z_str):
         x = jnp.array([int(b) for b in x_str], dtype=jnp.uint8)
         z = jnp.array([int(b) for b in z_str], dtype=jnp.uint8)
@@ -252,4 +264,3 @@ def stabilizer_validation():
 
 if __name__ == "__main__":
     stabilizer_validation()
-
