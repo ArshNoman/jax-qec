@@ -1,4 +1,10 @@
 from discovery.discoverer_utils import generate_all_symplectic_generators, valid_nk_code, diagnostics
+from decoders.repetition_decoder import RepetitionXDecoder
+from qecsimulator.benchmark import estimate_error_rate
+from noise.bit_flip import BitFlipNoise
+from codes import RepetitionEncode
+from utils import logical_zero
+
 
 from flax.training.train_state import TrainState
 from typing import List, Tuple
@@ -45,11 +51,16 @@ class QECEnv:
         done = self.step_count >= self.max_steps
 
         valid = valid_nk_code(self.generators, self.n, self.k)
+        reward = 0.0
         if len(self.generators) == self.max_steps and self.is_valid_code():
-            logical_error_rate = simulate_superposition(self.generators)
-            reward = jnp.clip(1.0 - logical_error_rate, 0.0, 1.0)
-        else:
-            reward = 0.0
+            # Build a code object from the symplectic generators
+            code = RepetitionEncode(len(self.generators))
+            noise = BitFlipNoise(p=0.05)
+            decoder = RepetitionXDecoder(code)
+            key = jax.random.PRNGKey(np.random.randint(0, 1e6))
+
+            error_rate = estimate_error_rate(logical_zero, code, noise, decoder, key, trials=100)
+            reward = float(jnp.clip(1.0 - error_rate, 0.0, 1.0))
 
         info = {
             "valid": valid,

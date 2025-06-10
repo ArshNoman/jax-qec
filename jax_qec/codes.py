@@ -1,7 +1,9 @@
 from abc import ABC, abstractmethod
-from typing import Any
+from typing import Any, List
 
+from jax.experimental import sparse
 import jax.numpy as jnp
+from jax import random
 import jax.lax as lax
 import jax
 
@@ -113,3 +115,65 @@ class RepetitionEncode(QuantumCode):
         syndrome = bits[:-1] ^ bits[1:]  # XOR adjacent bits to compute syndrome; shape (n-1,)
 
         return syndrome
+
+
+class StabilizerCode(QuantumCode):
+    def __init__(self, generators: List[jnp.ndarray]):
+        self.generators = generators
+        self.n = generators[0].shape[0] // 2
+        super().__init__(n_qubits=self.n, k_qubits=self.n - len(generators))
+
+    def encode(self, logical_state: jnp.ndarray) -> jnp.ndarray:
+        """
+        For now, encodes logical |0⟩ to the +1 eigenspace of the stabilizers.
+        """
+        dim = 2 ** self.n
+        state = jnp.zeros((dim,))
+        state = state.at[0].set(1.0)  # Start with |0...0⟩
+
+        for g in self.generators:
+            state = self.projector_apply(g, state)
+        return state / jnp.linalg.norm(state)
+
+    def projector_apply(self, generator, state):
+        """
+        Apply (I + S)/2 to the state, where S is the stabilizer operator from the symplectic form.
+        For now, simulate as identity (since full Pauli matrix implementation is complex).
+        """
+        return state  # Placeholder — you may enhance this with full Pauli application later
+
+    def measure(self, state: jnp.ndarray, key: jax.random.PRNGKey) -> jnp.ndarray:
+        probs = jnp.abs(state) ** 2
+        probs = probs / jnp.sum(probs)
+        index = random.choice(key, a=len(probs), p=probs)
+        collapsed = jnp.zeros_like(state)
+        return collapsed.at[index].set(1.0)
+
+    def measure_syndrome_collapsed(self, state: jnp.ndarray) -> jnp.ndarray:
+        """
+        Compute stabilizer syndrome by measuring each stabilizer generator.
+        Each generator is represented as a 2n binary vector [X|Z].
+        """
+        index = int(jnp.argmax(jnp.abs(state)))
+        bits = jnp.right_shift(index, jnp.arange(self.n - 1, -1, -1)) & 1
+
+        syndrome = []
+        for g in self.generators:
+            x = g[:self.n]
+            z = g[self.n:]
+            parity = jnp.sum((x + z) * bits) % 2
+            syndrome.append(parity)
+        return jnp.array(syndrome, dtype=jnp.uint8)
+
+    def decode_collapsed(self, state: jnp.ndarray) -> jnp.ndarray:
+        """
+        Stub decoder: assumes correctable error and returns |0⟩
+        """
+        return jnp.array([1.0, 0.0])
+
+    def decode_superposition(self, state: jnp.ndarray, key: jax.random.PRNGKey) -> jnp.ndarray:
+        """
+        Collapse then decode.
+        """
+        collapsed = self.measure(state, key)
+        return self.decode_collapsed(collapsed)

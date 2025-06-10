@@ -29,7 +29,7 @@ class RepetitionXDecoder(Decoder):
         # Get the index of the '1.0' in the state (collapsed)
         index = jnp.argmax(state)
 
-        bits = jnp.array([(index >> i) & 1 for i in range(n)][::-1], dtype=jnp.int32) # Convert index to binary array
+        bits = jnp.array([(index >> i) & 1 for i in range(n)][::-1], dtype=jnp.int32)  # Convert index to binary array
 
         def body_fn(i, b):
             s_i = syndrome[i]
