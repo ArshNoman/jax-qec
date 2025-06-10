@@ -1,10 +1,10 @@
 from utils import state_to_braket, logical_zero, logical_one, plus_state, minus_state, bit_flip
 
+from discovery.rl_discoverer import QECEnv, RLCodeDiscoverer
 from decoders.repetition_decoder import RepetitionXDecoder
 from qecsimulator.simulate import simulate_superposition
 from qecsimulator.benchmark import estimate_error_rate
 from noise.phase_flip import PhaseFlipNoise
-from discovery.rl_discoverer import QECEnv
 from noise.bit_flip import BitFlipNoise
 from codes import RepetitionEncode
 
@@ -260,5 +260,11 @@ def stabilizer_validation():
     print("Example 4 - [IZZ, ZZI, ZIZ]:", valid_nk_code([s6, s7, s8], n, k))
 
 
+def rlagent():
+    env = QECEnv()
+    agent = RLCodeDiscoverer(env)
+    agent.search(num_episodes=500)
+
+
 if __name__ == "__main__":
-    rl_qec_env()
+    rlagent()
