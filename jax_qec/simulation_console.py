@@ -1,5 +1,5 @@
 from utils import state_to_braket, logical_zero, logical_one, plus_state, minus_state, bit_flip
-from discovery.discoverer_utils import is_valid_stabilizer_set
+from discovery.discoverer_utils import is_valid_stabilizer_set, valid_nk_code
 
 from decoders.repetition_decoder import RepetitionXDecoder
 from qecsimulator.simulate import simulate_superposition
@@ -222,35 +222,32 @@ def old_rl_qec_env():
 
 def stabilizer_validation():
     def to_symplectic(x_str, z_str):
-        """Helper: create symplectic vector from X-string and Z-string (like '010', '101')"""
         x = jnp.array([int(b) for b in x_str], dtype=jnp.uint8)
         z = jnp.array([int(b) for b in z_str], dtype=jnp.uint8)
         return jnp.concatenate([x, z])
 
-    # ----------------------------
-    # ✅ Example 1: Valid repetition code
-    # ZZI = 110000, IZZ = 011000
+    n = 3  # number of qubits
+    k = 1  # number of logical qubits
+
+    # Example 1: Correct [[3,1]] repetition code
     s1 = to_symplectic("000", "110")  # ZZI
     s2 = to_symplectic("000", "011")  # IZZ
-    print("Example 1 - [ZZI, IZZ]:", is_valid_stabilizer_set([s1, s2]))
+    print("Example 1 - [ZZI, IZZ]:", valid_nk_code([s1, s2], n, k))
 
-    # ----------------------------
-    # ❌ Example 2: Non-commuting pair (ZIZ and XZX)
+    # Example 2: Non-commuting pair
     s3 = to_symplectic("010", "101")  # ZIZ
     s4 = to_symplectic("101", "010")  # XZX
-    print("Example 2 - [ZIZ, XZX]:", is_valid_stabilizer_set([s3, s4]))
+    print("Example 2 - [ZIZ, XZX]:", valid_nk_code([s3, s4], n, k))
 
-    # ----------------------------
-    # ❌ Example 3: Duplicate generator (not independent)
+    # Example 3: Duplicate stabilizer (not independent)
     s5 = to_symplectic("000", "110")  # ZZI
-    print("Example 3 - [ZZI, ZZI]:", is_valid_stabilizer_set([s5, s5]))
+    print("Example 3 - [ZZI, ZZI]:", valid_nk_code([s5, s5], n, k))
 
-    # ----------------------------
-    # ✅ Example 4: Valid 3-generator set (add ZIZ if commuting)
+    # Example 4: 3 generators → too many for [[3,1]]
     s6 = to_symplectic("000", "011")  # IZZ
     s7 = to_symplectic("000", "110")  # ZZI
     s8 = to_symplectic("000", "101")  # ZIZ
-    print("Example 4 - [IZZ, ZZI, ZIZ]:", is_valid_stabilizer_set([s6, s7, s8]))
+    print("Example 4 - [IZZ, ZZI, ZIZ]:", valid_nk_code([s6, s7, s8], n, k))
 
 
 if __name__ == "__main__":

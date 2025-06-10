@@ -1,4 +1,5 @@
 import itertools
+from typing import List
 import jax.numpy as jnp
 
 
@@ -58,3 +59,15 @@ def is_valid_stabilizer_set(generators: list) -> bool:
     - They are linearly independent
     """
     return all_commute(generators) and are_independent(generators)
+
+
+def valid_nk_code(generators: List[jnp.ndarray], n: int, k: int) -> bool:
+    """
+    Returns True if:
+    - Number of generators == n - k
+    - Generators commute pairwise
+    - Generators are independent (full rank over GF(2))
+    """
+    if len(generators) != n - k:
+        return False
+    return is_valid_stabilizer_set(generators)

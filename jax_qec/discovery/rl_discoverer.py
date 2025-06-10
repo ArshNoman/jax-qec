@@ -1,4 +1,4 @@
-from discovery.discoverer_utils import generate_all_symplectic_generators
+from discovery.discoverer_utils import generate_all_symplectic_generators, valid_nk_code
 
 import jax.numpy as jnp
 import numpy as np
@@ -50,11 +50,6 @@ class QECEnv:
 
     def is_valid_code(self) -> bool:
         """
-        A valid [[3,1]] repetition code requires 2 linearly independent Z-type
-        generators. We check if the current stabilizers meet that condition.
+        Returns True if the current set of generators defines a valid [[n, k]] code.
         """
-        if len(self.generators) != self.max_steps:
-            return False
-        mat = jnp.stack(self.generators)
-        rank = jnp.linalg.matrix_rank(mat)
-        return rank == self.max_steps
+        return valid_nk_code(self.generators, self.n, self.k)
