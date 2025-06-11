@@ -154,7 +154,7 @@ class StabilizerCode(QuantumCode):
         Compute stabilizer syndrome by measuring each stabilizer generator.
         Each generator is represented as a 2n binary vector [X|Z].
         """
-        index = int(jnp.argmax(jnp.abs(state)))
+        index = jnp.argmax(jnp.abs(state))
         bits = jnp.right_shift(index, jnp.arange(self.n - 1, -1, -1)) & 1
 
         syndrome = []

@@ -260,10 +260,62 @@ def stabilizer_validation():
     print("Example 4 - [IZZ, ZZI, ZIZ]:", valid_nk_code([s6, s7, s8], n, k))
 
 
+def symplectic_to_pauli(symp: jnp.ndarray) -> str:
+    """
+    Convert a binary symplectic vector to a Pauli string.
+    """
+    n = symp.shape[0] // 2
+    x = symp[:n]
+    z = symp[n:]
+    pauli = []
+    for xi, zi in zip(x, z):
+        if xi == 0 and zi == 0:
+            pauli.append('I')
+        elif xi == 1 and zi == 0:
+            pauli.append('X')
+        elif xi == 0 and zi == 1:
+            pauli.append('Z')
+        elif xi == 1 and zi == 1:
+            pauli.append('Y')
+    return ''.join(pauli)
+
+
 def rlagent():
-    env = QECEnv(5, 1)
+    print("Running RL QEC Environment Test")
+
+    num_episodes = 500
+
+    env = QECEnv(n=3, k=1)
     agent = RLCodeDiscoverer(env)
-    agent.search(num_episodes=100)
+    key = jax.random.PRNGKey(0)
+
+    best_reward = -1
+    best_generators = []
+
+    for ep in range(num_episodes):
+        total_reward = 0
+        state = env.reset()
+        done = False
+        key, subkey = jax.random.split(key)
+
+        while not done:
+            subkey, action_key = jax.random.split(subkey)
+            action, probs = agent.sample_action(state, action_key)
+            state, reward, done, info = env.step(action)
+            total_reward += reward
+
+        print(f"Episode {ep + 1}: Reward = {total_reward:.4f}")
+        if total_reward > best_reward:
+            best_reward = total_reward
+            best_generators = list(env.generators)
+
+    print("\nBest Episode Reward:", best_reward)
+    print("Best Stabilizer Generators:")
+
+    for i, g in enumerate(best_generators):
+        print(f"  Generator {i + 1}:")
+        print(f"    Symplectic: {g.tolist()}")
+        print(f"    Pauli:      {symplectic_to_pauli(g)}")
 
 
 if __name__ == "__main__":
