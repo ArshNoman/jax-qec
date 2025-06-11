@@ -1,4 +1,4 @@
-from discovery.discoverer_utils import generate_all_symplectic_generators, valid_nk_code, diagnostics
+from discovery.discoverer_utils import generate_all_symplectic_generators, generate_z_only_generators, valid_nk_code, diagnostics
 from decoders.repetition_decoder import RepetitionXDecoder
 from qecsimulator.benchmark import estimate_error_rate
 from noise.bit_flip import BitFlipNoise
@@ -22,7 +22,8 @@ class QECEnv:
         self.n = n  # Number of physical qubits
         self.k = k  # Number of logical qubits
         self.max_steps = self.n - self.k  # = 2 stabilizer generators
-        self.possible_generators = generate_all_symplectic_generators(self.n)
+        self.possible_generators = generate_z_only_generators(self.n)
+        # self.possible_generators = generate_all_symplectic_generators(self.n)
 
         self.reset()
 
@@ -59,7 +60,7 @@ class QECEnv:
             decoder = RepetitionXDecoder(code)
             key = jax.random.PRNGKey(np.random.randint(0, 1e6))
 
-            error_rate = estimate_error_rate(logical_zero, code, noise, decoder, key, trials=100)
+            error_rate = estimate_error_rate(logical_zero, code, noise, decoder, key, trials=1000)
             reward = float(jnp.clip(1.0 - error_rate, 0.0, 1.0))
 
         info = {

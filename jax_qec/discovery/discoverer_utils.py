@@ -1,6 +1,7 @@
-import itertools
 from typing import List
 import jax.numpy as jnp
+import numpy as np
+import itertools
 
 
 def generate_all_symplectic_generators(n):
@@ -14,6 +15,20 @@ def generate_all_symplectic_generators(n):
     all_binary_vectors = itertools.product([0, 1], repeat=total_bits)
     non_identity = [jnp.array(v, dtype=jnp.uint8) for v in all_binary_vectors if any(v)]
     return non_identity
+
+
+def generate_z_only_generators(n: int) -> List[jnp.ndarray]:
+    """
+    Generate all symplectic binary vectors of length 2n with only Z components (X = 0).
+    These are suitable for bit-flip detection.
+    """
+    generators = []
+    for i in range(1, 2**n):  # Skip 0 vector
+        z = np.array(list(map(int, bin(i)[2:].zfill(n))), dtype=np.uint8)
+        x = np.zeros_like(z)
+        gen = jnp.array(np.concatenate([x, z]))
+        generators.append(gen)
+    return generators
 
 
 def symplectic_commute(v1: jnp.ndarray, v2: jnp.ndarray) -> bool:
