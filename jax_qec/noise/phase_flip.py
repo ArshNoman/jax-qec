@@ -27,7 +27,7 @@ class PhaseFlipNoise(NoiseModel):
         - Modified state with phase flips applied
         """
         is_batched = state.ndim == 2
-        n_qubits = int(jnp.log2(state.shape[-1]))  # Safe here
+        n_qubits = int(jnp.log2(state.shape[-1]))
 
         def flip_each_qubit(state_i, key_i):
             for q in range(n_qubits):

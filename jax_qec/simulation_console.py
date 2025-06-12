@@ -176,7 +176,7 @@ def decoder_test():
 
     # current = noise.apply(current, key)
     current = noise.probability_flip(current, key, 0)
-    current = noise.probability_flip(current, key, 1)
+    # current = noise.probability_flip(current, key, 1)
     print("Noisy State:", current, '->', state_to_braket(current))
 
     # Syndrome measurement
@@ -292,4 +292,4 @@ def rlagent():
 
 
 if __name__ == "__main__":
-    rlagent()
+    decoder_test()
