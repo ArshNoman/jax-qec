@@ -283,7 +283,7 @@ def symplectic_to_pauli(symp: jnp.ndarray) -> str:
 def rlagent():
     print("Running RL QEC Environment Test")
 
-    num_episodes = 500
+    num_episodes = 100
 
     env = QECEnv(n=3, k=1)
     agent = RLCodeDiscoverer(env)
