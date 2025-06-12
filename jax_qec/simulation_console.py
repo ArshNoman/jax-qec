@@ -1,7 +1,7 @@
 from utils import state_to_braket, logical_zero, logical_one, plus_state, minus_state, bit_flip
 
+from decoders.repetition_decoder import RepetitionXDecoder, RepetitionZDecoder
 from discovery.rl_discoverer import QECEnv, RLCodeDiscoverer
-from decoders.repetition_decoder import RepetitionXDecoder
 from qecsimulator.simulate import simulate_superposition
 from qecsimulator.benchmark import estimate_error_rate
 from noise.phase_flip import PhaseFlipNoise
@@ -161,7 +161,7 @@ def batched_bit_flip_example():
 
 
 def decoder_test():
-    current = logical_zero  # |0⟩
+    current = logical_one  # |0⟩
     code = RepetitionEncode(3)
     key = jax.random.PRNGKey(r.randint(0, 1000))
 
@@ -171,7 +171,7 @@ def decoder_test():
     print('Encoded logical state:', current, '->', state_to_braket(current))
 
     # Bit-flip noise model
-    noise = BitFlipNoise(p=1.0)
+    noise = PhaseFlipNoise(p=1.0)
     key, subkey = jax.random.split(key)
 
     # current = noise.apply(current, key)
@@ -184,36 +184,9 @@ def decoder_test():
     print('Syndrome:', syndrome)
 
     # Decode
-    decoder = RepetitionXDecoder(code)
+    decoder = RepetitionZDecoder(code)
     current = decoder.decode(current, syndrome)
     print('Decoded state:', current, '->', state_to_braket(current))
-
-
-def rl_qec_env():
-    env = QECEnv()
-    state = env.reset()
-    print("Initial state ([x1 x2 x3 | z1 z2 z3]):\n", state)
-
-    done = False
-    total_reward = 0
-    step_num = 0
-
-    while not done:
-        action = np.random.choice(len(env.possible_generators))
-        print(f"\nStep {step_num + 1}: Taking action {action}", f"({env.possible_generators[action]})")
-
-        state, reward, done, info = env.step(action)
-
-        if 1 in state[1]:
-            print("New state: ([x1 x2 x3 | z1 z2 z3]):\n", state)
-            print("Reward received:", reward)
-            if done:
-                print('Done')
-
-        total_reward += reward
-        step_num += 1
-
-    print(f"\nTotal reward: {total_reward}")
 
 
 def stabilizer_validation():

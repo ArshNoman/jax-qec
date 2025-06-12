@@ -62,3 +62,18 @@ class PhaseFlipNoise(NoiseModel):
             return state_ * phase
 
         return lax.cond(should_flip, apply_z, lambda x: x, state)
+
+    def probability_flip(self, state: jnp.ndarray, key, qubit_index: int) -> jnp.ndarray:
+        """
+        Public method to apply a probabilistic bit-flip to a specific qubit.
+
+        Parameters:
+        - state: jnp.ndarray (collapsed or superposition)
+        - key: PRNG key
+        - qubit_index: index of the qubit to flip
+
+        Returns:
+        - jnp.ndarray: new state
+        """
+        n_qubits = int(jnp.log2(state.shape[-1]))
+        return self.flip_qubit(state, key, qubit_index, n_qubits)
