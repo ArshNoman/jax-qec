@@ -8,7 +8,17 @@ minus_state = jnp.array([1.0 / jnp.sqrt(2), -1.0 / jnp.sqrt(2)])  # |-⟩ state 
 pauli_x = jnp.array([[0,1],[1,0]])
 pauli_z = jnp.array([[1,0],[0,-1]])
 
-PAULI_MAP = {"X": pauli_x, "Z": pauli_z}
+GATE_MAP = {"X": pauli_x, "Z": pauli_z}
 
-def create_gate_stack(gates: str):
-    return jnp.stack([PAULI_MAP[i] for i in gates])
+def gateStack(gates: str):
+    """
+    Convert a string of gates to a stack of JAX arrays and thus prepared
+    for use in applying gates to qubits
+
+    Parameters:
+    - gates: str sequence of a gate or a sequence of gates
+
+    Returns:
+    - JAX array of a stack of gates
+    """
+    return jnp.stack([GATE_MAP[i] for i in gates])
