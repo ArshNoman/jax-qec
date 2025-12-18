@@ -8,10 +8,18 @@ qubit = logical_zero
 # Create a sequence of Pauli Gates
 PauliGates = gateStack("XZ")
 
-print(PauliGates)
-
-# Apply them to the inital qubit and print the result
+# Apply them to the initial qubit and print the result
 qubit = apply(qubit, PauliGates)
-print(qubit)
+print("Gate XZ applied to a logical zero: ", qubit, '\n')
 
-print(s)
+# Create two standard qubits
+a = logical_one
+b = logical_zero
+
+# Apply the Kronecker product between them to create a block matrix
+two_qubit_state = kron(a, b)
+
+# Standard matrix multiplication to apply the CNOT
+out = c @ two_qubit_state
+print("CNOT applied to a logical one and logical zero:", out, '\n')
+# the output of the above is [0. 0. 0. 1.], this is equal to the computational basis state ∣11⟩
