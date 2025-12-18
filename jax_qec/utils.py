@@ -16,7 +16,7 @@ c = jnp.array([
     [0,0,1,0]
 ])
 
-GATE_MAP = {"X": pauli_x, "Z": pauli_z}
+GATE_MAP = {"X": pauli_x, "Z": pauli_z, "H": h, "S": s,}
 
 def gateStack(gates: str):
     """
@@ -30,3 +30,16 @@ def gateStack(gates: str):
     - JAX array of a stack of gates
     """
     return jnp.stack([GATE_MAP[i] for i in gates])
+
+def kron(a: jnp.ndarray, b: jnp.ndarray):
+    """
+    Return a block matrix of a and b, known as the Kronecker product
+
+    Parameters:
+    - a: 1D jnp.ndarray
+    - b: another 1D jnp.ndarray
+
+    Returns:
+    - Kronecker product of a and b
+    """
+    return jnp.kron(a, b)
