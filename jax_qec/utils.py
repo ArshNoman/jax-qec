@@ -8,7 +8,7 @@ minus_state = jnp.array([1.0 / jnp.sqrt(2), -1.0 / jnp.sqrt(2)])  # |-⟩ state 
 pauli_x = jnp.array([[0,1],[1,0]])
 pauli_z = jnp.array([[1,0],[0,-1]])
 h = jnp.array([[1.0 / jnp.sqrt(2),1.0 / jnp.sqrt(2)],[1.0 / jnp.sqrt(2),-1.0 / jnp.sqrt(2)]])
-
+s = jnp.array([[1.0, 0.0], [0.0, 1.0j]])
 c = jnp.array([
     [1,0,0,0],
     [0,1,0,0],
